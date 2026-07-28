@@ -45,13 +45,23 @@
   }
   .search-bar input::placeholder { color: var(--muted); }
   .sort-btn {
-    display: flex; align-items: center; justify-content: center; padding: 10px 12px;
+    position: relative; display: flex; align-items: center; justify-content: center; padding: 10px 12px;
     background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
     color: var(--muted); font-size: 13px; font-family: inherit; cursor: pointer;
-    white-space: nowrap; transition: all 0.15s; gap: 4px;
+    white-space: nowrap; gap: 4px; user-select: none;
   }
-  .sort-btn:active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .sort-btn svg { opacity: 0.5; }
+  .sort-btn:active { opacity: 0.7; }
+  .sort-menu {
+    display: none; position: absolute; top: 44px; right: 0; min-width: 140px;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    overflow: hidden; z-index: 10; box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .sort-menu.open { display: block; }
+  .sort-menu div {
+    padding: 10px 14px; font-size: 13px; cursor: pointer; color: var(--text);
+    transition: background 0.1s;
+  }
+  .sort-menu div:active, .sort-menu div.active { background: rgba(59,130,246,0.15); color: var(--accent); }
 
   .card {
     background: var(--card); border: 1px solid var(--border);
@@ -210,21 +220,67 @@
   }
 
   function renderToolbar() {
-    var sortLabel = { default: "Padrão", name: "A → Z", price: "Preço", store: "Loja" }[sortBy] || "Padrão";
+    var labels = { default: "Padrão", name: "A → Z", price: "Preço", store: "Loja" };
+    var sel = sortBy;
     return '<div class="toolbar">' +
       '<div class="search-bar">' +
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
-      '<input id="search" type="text" placeholder="Buscar..." oninput="onSearch(this.value)" value="' + esc(searchQuery) + '">' +
+      '<input id="search" type="text" placeholder="Buscar..." value="' + esc(searchQuery) + '">' +
       '</div>' +
-      '<div class="sort-btn" onclick="cycleSort()">' +
+      '<div class="sort-btn" onclick="toggleSortMenu()">' +
       '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M7 12h10M10 18h4"/></svg>' +
-      sortLabel + '</div></div>';
+      labels[sel] +
+      '<div class="sort-menu" id="sort-menu">' +
+      '<div class="' + (sel === "default" ? "active" : "") + '" onclick="setSort(\'default\')">Padrão</div>' +
+      '<div class="' + (sel === "name" ? "active" : "") + '" onclick="setSort(\'name\')">A → Z</div>' +
+      '<div class="' + (sel === "price" ? "active" : "") + '" onclick="setSort(\'price\')">Preço</div>' +
+      '<div class="' + (sel === "store" ? "active" : "") + '" onclick="setSort(\'store\')">Loja</div>' +
+      '</div></div></div>';
   }
 
-  function onSearch(q) { searchQuery = q; applyFilters(); showHome(); }
-  function cycleSort() { var s = ["default","name","price","store"]; var i = s.indexOf(sortBy); sortBy = s[(i+1)%s.length]; applyFilters(); showHome(); }
+  function toggleSortMenu() {
+    var m = document.getElementById("sort-menu"); m.classList.toggle("open");
+  }
+
+  function setSort(s) { sortBy = s; applyFilters(); showHome(); }
+
+  // Close sort menu on outside click
+  document.addEventListener("click", function (e) {
+    var menu = document.getElementById("sort-menu");
+    if (menu && !e.target.closest(".sort-btn")) menu.classList.remove("open");
+  });
 
   // ── Screens ───────────────────────────────────────────────────────
+  function renderProductCards() {
+    var container = document.getElementById("product-cards");
+    if (!container) return;
+    applyFilters();
+    var html = '';
+    if (!products.length) {
+      html = '<div class="empty-state"><span class="icon">🔍</span><p>Nenhum produto encontrado<br>para "' + esc(searchQuery) + '"</p></div>';
+    } else {
+      products.forEach(function (p) {
+        var m = MKT[p.marketplace] || { l: "?", c: "ml" };
+        var t = trend(p); var ch = pct(p.initial_price, p.last_price);
+        html += '<div class="card ' + t + '" onclick="showDetail(' + p.id + ')"><div class="row">' +
+          '<div class="mkt-badge ' + m.c + '">' + m.l + '</div><div class="info">' +
+          '<div class="p-title">' + esc(p.title || "").slice(0, 52) + '</div>' +
+          '<div class="p-meta">' +
+          '<span class="p-price ' + t + '">' + fmtPrice(p.last_price, p.currency_id) + '</span>' +
+          '<span class="p-change">' + ch + '</span>' +
+          (p.target_price ? '<span class="p-target">' + fmtPrice(p.target_price, p.currency_id) + '</span>' : '') +
+          '</div></div></div></div>';
+      });
+    }
+    container.innerHTML = html;
+  }
+
+  function onSearch(q) {
+    searchQuery = q;
+    renderProductCards();
+    document.getElementById("search").focus();
+  }
+
   function showHome() {
     selected = null; deleteMode = false; selectedList = [];
     tg.BackButton.hide(); tg.MainButton.hide();
@@ -233,9 +289,9 @@
     if (!allProducts.length) { renderEmpty(); return; }
 
     applyFilters();
-    var count = products.length; var shown = allProducts.length;
+    var shown = allProducts.length;
     var subtitle = "Monitorando " + shown + " produto" + (shown !== 1 ? "s" : "");
-    if (searchQuery) subtitle = count + " de " + shown + " resultado" + (count !== 1 ? "s" : "");
+    if (searchQuery) { var c = products.length; subtitle = c + " de " + shown + " resultado" + (c !== 1 ? "s" : ""); }
 
     var html =
       '<div class="header"><div class="header-left"><h1>Meus produtos</h1><p>' + subtitle + '</p></div>' +
@@ -244,24 +300,12 @@
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></div>' +
       '<div class="icon-btn" onclick="location.reload()" title="Atualizar">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115.36-6.36L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15.36 6.36L3 16"/></svg></div>' +
-      '</div></div>' + renderToolbar();
-
-    if (!count) { html += '<div class="empty-state"><span class="icon">🔍</span><p>Nenhum produto encontrado<br>para "' + esc(searchQuery) + '"</p></div>'; render(html); return; }
-
-    products.forEach(function (p) {
-      var m = MKT[p.marketplace] || { l: "?", c: "ml" };
-      var t = trend(p); var ch = pct(p.initial_price, p.last_price);
-      html += '<div class="card ' + t + '" onclick="showDetail(' + p.id + ')"><div class="row">' +
-        '<div class="mkt-badge ' + m.c + '">' + m.l + '</div><div class="info">' +
-        '<div class="p-title">' + esc(p.title || "").slice(0, 52) + '</div>' +
-        '<div class="p-meta">' +
-        '<span class="p-price ' + t + '">' + fmtPrice(p.last_price, p.currency_id) + '</span>' +
-        '<span class="p-change">' + ch + '</span>' +
-        (p.target_price ? '<span class="p-target">' + fmtPrice(p.target_price, p.currency_id) + '</span>' : '') +
-        '</div></div></div></div>';
-    });
+      '</div></div>' + renderToolbar() + '<div id="product-cards"></div>';
 
     render(html);
+    renderProductCards();
+    var si = document.getElementById("search");
+    if (si) si.addEventListener("input", function () { onSearch(this.value); });
   }
 
   function renderLoading() { render('<div class="loading-state"><div class="spinner"></div><p>Carregando produtos...</p></div>'); }
@@ -433,7 +477,7 @@
   window.confirmTarget = confirmTarget; window.removeTarget = removeTarget; window.doRemove = doRemove;
   window.enterDeleteMode = enterDeleteMode; window.toggleSelect = toggleSelect;
   window.toggleAll = toggleAll; window.confirmDelete = confirmDelete; window.deleteAll = deleteAll;
-  window.onSearch = onSearch; window.cycleSort = cycleSort;
+  window.toggleSortMenu = toggleSortMenu; window.setSort = setSort;
 
   renderLoading(); loadProducts();
 })();
