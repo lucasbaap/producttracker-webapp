@@ -141,11 +141,11 @@
               shopee: { l: "SH", c: "sh", full: "Shopee", prep: "na" },
               aliexpress: { l: "AE", c: "ae", full: "AliExpress", prep: "no" },
               kabum: { l: "KB", c: "kb", full: "KaBuM!", prep: "na" } };
-  var API_URL = "";
+  var API_URL = "https://contacting-twiki-martial-leo.trycloudflare.com";
 
   // ── API Helpers ──────────────────────────────────────────────────
   function apiUrl(path) {
-    return path + (path.indexOf("?") > -1 ? "&" : "?") + "init_data=" + encodeURIComponent(tg.initData);
+    return API_URL + path + (path.indexOf("?") > -1 ? "&" : "?") + "init_data=" + encodeURIComponent(tg.initData);
   }
 
   async function apiGet(path) {
@@ -160,7 +160,7 @@
   async function apiPost(path, body) {
     try {
       body.init_data = tg.initData;
-      var r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      var r = await fetch(API_URL + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       return await r.json();
     } catch (e) {
       return { error: "network_error" };
@@ -355,7 +355,7 @@
 
   async function loadProducts() {
     var cache_buster = Date.now();
-    var url = "/api/products?_cb=" + cache_buster + "&init_data=" + encodeURIComponent(tg.initData);
+    var url = API_URL + "/api/products?_cb=" + cache_buster + "&init_data=" + encodeURIComponent(tg.initData);
     try {
       var resp = await fetch(url);
       var data = await resp.json();
