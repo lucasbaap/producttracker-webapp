@@ -139,13 +139,7 @@
   var MKT = { mercadolibre: { l: "ML", c: "ml" }, amazon: { l: "AM", c: "am" },
               shopee: { l: "SH", c: "sh" }, aliexpress: { l: "AE", c: "ae" },
               kabum: { l: "KB", c: "kb" } };
-  var API_BASE = null;
-
-  // Try to get API URL from the backend config (passed via query param or env)
-  // For now, use the same as the WEBAPP_API_URL configured
-  var SCRIPTS = document.getElementsByTagName("script");
-  var SRC = SCRIPTS[SCRIPTS.length - 1].src;
-  var API_URL = localStorage.getItem("api_url");
+  var API_URL = "https://fa343204cce06536-177-17-240-113.serveousercontent.com";
 
   // ── API Helpers ──────────────────────────────────────────────────
   function apiUrl(path) {
@@ -340,12 +334,6 @@
   window.removeTarget = removeTarget;
   window.doRemove = doRemove;
 
-  // Set API URL from the page URL query param or use localhost for dev
-  var params = new URLSearchParams(window.location.search);
-  API_URL = params.get("api_url") || localStorage.getItem("api_url") || "http://localhost:9099";
-  localStorage.setItem("api_url", API_URL);
-
-  console.log("API_URL:", API_URL);
   showHome();
 })();
 </script>
