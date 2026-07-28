@@ -7,148 +7,107 @@
 <style>
   :root {
     --tg-bg: #18222d;
-    --tg-bg-secondary: #1c2735;
     --tg-text: #e4e4e4;
     --tg-hint: #7d8b99;
     --tg-accent: #2ea6ff;
-    --tg-accent-text: #fff;
-    --tg-danger: #e74c3c;
-    --tg-success: #27ae60;
     --tg-card: #1e2a38;
     --tg-border: #253242;
-    --tg-section-header: #6a7b8d;
+    --tg-danger: #e74c3c;
+    --tg-success: #27ae60;
     --radius: 12px;
     --radius-sm: 8px;
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: var(--tg-bg);
     color: var(--tg-text);
-    padding: 16px;
+    padding: 12px;
     max-width: 600px;
     margin: 0 auto;
     -webkit-font-smoothing: antialiased;
   }
-
-  .header { margin-bottom: 20px; }
-  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-  .header p { color: var(--tg-hint); font-size: 14px; }
-
+  .header { margin-bottom: 16px; }
+  .header h1 { font-size: 20px; font-weight: 700; }
+  .header p { color: var(--tg-hint); font-size: 13px; margin-top: 2px; }
+  .loading { text-align: center; padding: 48px 16px; color: var(--tg-hint); font-size: 14px; }
   .card {
     background: var(--tg-card);
     border: 1px solid var(--tg-border);
     border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 12px;
-  }
-
-  .action-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .action-card {
-    background: var(--tg-card);
-    border: 1px solid var(--tg-border);
-    border-radius: var(--radius);
-    padding: 20px 14px;
-    text-align: center;
+    padding: 14px;
+    margin-bottom: 10px;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
+    transition: background 0.15s;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
-  .action-card:active {
-    background: var(--tg-accent);
-    border-color: var(--tg-accent);
+  .card:active { background: var(--tg-border); }
+  .card.disabled { opacity: 0.5; cursor: default; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .icon {
+    width: 36px; height: 36px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 12px; flex-shrink: 0;
   }
-  .action-card.danger:active {
-    background: var(--tg-danger);
-    border-color: var(--tg-danger);
+  .icon.ml { background: #fff159; color: #333; }
+  .icon.am { background: #ff9900; color: #fff; }
+  .icon.sh { background: #ee4d2d; color: #fff; }
+  .icon.ae { background: #e3312b; color: #fff; }
+  .icon.kb { background: #0759e6; color: #fff; }
+  .info { flex: 1; min-width: 0; }
+  .title { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .subtitle { font-size: 12px; color: var(--tg-hint); margin-top: 2px; }
+  .price { font-weight: 700; font-size: 15px; }
+  .price.down { color: var(--tg-success); }
+  .price.up { color: var(--tg-danger); }
+  .tag {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    padding: 2px 6px; border-radius: 8px; margin-left: 6px;
   }
-  .action-card .emoji { font-size: 28px; display: block; margin-bottom: 6px; }
-  .action-card .label { font-size: 13px; font-weight: 600; }
-
-  .step-indicator {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: center;
-    margin: 16px 0;
+  .tag.target { background: var(--tg-accent); color: #fff; }
+  .detail-screen { animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .btn {
+    display: block; width: 100%; padding: 12px 14px; border: 1px solid var(--tg-border);
+    border-radius: var(--radius); background: var(--tg-card); color: var(--tg-text);
+    font-size: 14px; font-family: inherit; text-align: left; cursor: pointer;
+    transition: background 0.15s; -webkit-tap-highlight-color: transparent;
   }
-  .step-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--tg-border);
-    transition: background 0.3s;
+  .btn:active { background: var(--tg-accent); color: #fff; border-color: var(--tg-accent); }
+  .btn.danger:active { background: var(--tg-danger); border-color: var(--tg-danger); color: #fff; }
+  .btn .emoji { margin-right: 8px; }
+  .back {
+    display: inline-block; padding: 8px 0; margin-bottom: 8px; font-size: 13px;
+    color: var(--tg-accent); cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
-  .step-dot.active { background: var(--tg-accent); }
-
-  .result-screen {
-    text-align: center;
-    padding: 40px 16px;
-  }
-  .result-screen .big-emoji { font-size: 48px; display: block; margin-bottom: 16px; }
-  .result-screen h2 { font-size: 18px; margin-bottom: 8px; }
-  .result-screen p { color: var(--tg-hint); font-size: 14px; line-height: 1.5; }
-
-  .input-group {
-    display: flex;
-    gap: 8px;
-    margin: 16px 0;
-  }
+  .input-group { display: flex; gap: 8px; margin-top: 8px; }
   .input-group input {
-    flex: 1;
-    padding: 12px 14px;
-    font-size: 16px;
-    border: 1px solid var(--tg-border);
-    border-radius: var(--radius-sm);
-    background: var(--tg-bg);
-    color: var(--tg-text);
-    font-family: inherit;
-    outline: none;
+    flex: 1; padding: 10px 12px; font-size: 16px; border: 1px solid var(--tg-border);
+    border-radius: var(--radius-sm); background: var(--tg-bg); color: var(--tg-text);
+    font-family: inherit; outline: none;
   }
   .input-group input:focus { border-color: var(--tg-accent); }
-
-  .btn {
-    display: inline-block;
-    padding: 10px 20px;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 15px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: opacity 0.15s;
-    -webkit-tap-highlight-color: transparent;
+  .input-group button {
+    padding: 10px 16px; background: var(--tg-accent); color: #fff; border: none;
+    border-radius: var(--radius-sm); font-weight: 600; font-family: inherit; cursor: pointer;
   }
-  .btn:active { opacity: 0.7; }
-  .btn-primary { background: var(--tg-accent); color: var(--tg-accent-text); }
-  .btn-danger { background: var(--tg-danger); color: #fff; }
-  .btn-secondary { background: var(--tg-bg-secondary); color: var(--tg-text); border: 1px solid var(--tg-border); }
-
-  .flex { display: flex; gap: 8px; }
-  .flex-center { justify-content: center; }
-  .mt-16 { margin-top: 16px; }
-  .mb-12 { margin-bottom: 12px; }
-  .w-full { width: 100%; }
-
-  #app > div { animation: fadeIn 0.2s; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
+  .empty { text-align: center; padding: 48px 16px; color: var(--tg-hint); }
+  .empty .e { font-size: 40px; display: block; margin-bottom: 12px; }
+  .toast {
+    position: fixed; bottom: 20px; left: 16px; right: 16px;
+    background: var(--tg-accent); color: #fff; text-align: center;
+    padding: 10px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
+    animation: fadeIn 0.3s; z-index: 100;
+  }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--tg-border); border-radius: 4px; }
 </style>
 </head>
 <body>
-
-<div id="app"></div>
+<div id="app"><div class="loading">Carregando...</div></div>
 
 <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
 <script>
@@ -159,257 +118,235 @@
 
   // ── Theme ────────────────────────────────────────────────────────
   function applyTheme() {
-    var scheme = tg.colorScheme;
-    var root = document.documentElement;
-    if (scheme === "dark") {
-      root.style.setProperty("--tg-bg", "#18222d");
-      root.style.setProperty("--tg-bg-secondary", "#1c2735");
-      root.style.setProperty("--tg-text", "#e4e4e4");
-      root.style.setProperty("--tg-hint", "#7d8b99");
-      root.style.setProperty("--tg-card", "#1e2a38");
-      root.style.setProperty("--tg-border", "#253242");
-      root.style.setProperty("--tg-accent", "#2ea6ff");
-      root.style.setProperty("--tg-section-header", "#6a7b8d");
+    var s = tg.colorScheme;
+    var r = document.documentElement;
+    if (s === "dark") {
+      r.style.setProperty("--tg-bg", "#18222d"); r.style.setProperty("--tg-text", "#e4e4e4");
+      r.style.setProperty("--tg-hint", "#7d8b99"); r.style.setProperty("--tg-card", "#1e2a38");
+      r.style.setProperty("--tg-border", "#253242");
     } else {
-      root.style.setProperty("--tg-bg", "#ffffff");
-      root.style.setProperty("--tg-bg-secondary", "#f0f2f5");
-      root.style.setProperty("--tg-text", "#222222");
-      root.style.setProperty("--tg-hint", "#8e8e93");
-      root.style.setProperty("--tg-card", "#ffffff");
-      root.style.setProperty("--tg-border", "#e0e0e0");
-      root.style.setProperty("--tg-accent", "#007aff");
-      root.style.setProperty("--tg-section-header", "#8e8e93");
+      r.style.setProperty("--tg-bg", "#ffffff"); r.style.setProperty("--tg-text", "#222222");
+      r.style.setProperty("--tg-hint", "#8e8e93"); r.style.setProperty("--tg-card", "#ffffff");
+      r.style.setProperty("--tg-border", "#e0e0e0");
     }
-    tg.setHeaderColor(scheme === "dark" ? "bg_color" : "bg_color");
-    tg.setBackgroundColor(scheme === "dark" ? "#18222d" : "#ffffff");
+    tg.setBackgroundColor(s === "dark" ? "#18222d" : "#ffffff");
   }
   applyTheme();
   tg.onEvent("themeChanged", applyTheme);
 
-  // ── User ─────────────────────────────────────────────────────────
-  var initUser = tg.initDataUnsafe.user || {};
-  var userName = initUser.first_name || "Usuário";
+  // ── Config ────────────────────────────────────────────────────────
+  var SYM = { BRL: "R$", ARS: "$", MXN: "$", CLP: "$", COP: "$", PEN: "S/" };
+  var MKT = { mercadolibre: { l: "ML", c: "ml" }, amazon: { l: "AM", c: "am" },
+              shopee: { l: "SH", c: "sh" }, aliexpress: { l: "AE", c: "ae" },
+              kabum: { l: "KB", c: "kb" } };
+  var API_BASE = null;
 
-  // ── State ─────────────────────────────────────────────────────────
-  var state = {
-    screen: "home",       // home | done_target | done_remove | done_list
-    selectedProductId: null,
-    selectedProductTitle: "",
-    selectedProductCurrency: "BRL",
-  };
+  // Try to get API URL from the backend config (passed via query param or env)
+  // For now, use the same as the WEBAPP_API_URL configured
+  var SCRIPTS = document.getElementsByTagName("script");
+  var SRC = SCRIPTS[SCRIPTS.length - 1].src;
+  var API_URL = localStorage.getItem("api_url");
 
-  // ── Helpers ───────────────────────────────────────────────────────
-  var SYMBOLS = { BRL: "R$", ARS: "$", MXN: "$", CLP: "$", COP: "$", PEN: "S/" };
-
-  function fmtPrice(val, cur) {
-    var sym = SYMBOLS[cur] || cur + " ";
-    var n = parseFloat(val);
-    return isNaN(n) ? val : sym + n.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+  // ── API Helpers ──────────────────────────────────────────────────
+  function apiUrl(path) {
+    if (!API_URL) return null;
+    return API_URL + path + (path.indexOf("?") > -1 ? "&" : "?") + "init_data=" + encodeURIComponent(tg.initData);
   }
 
-  function sendAction(action, extra) {
-    var payload = Object.assign({ action: action, init_data: tg.initData }, extra || {});
+  async function apiGet(path) {
+    var url = apiUrl(path);
+    if (!url) return null;
     try {
-      tg.sendData(JSON.stringify(payload));
+      var r = await fetch(url);
+      return await r.json();
     } catch (e) {
-      tg.showAlert("Erro ao comunicar com o bot.");
+      return { error: "network_error" };
     }
   }
 
-  function render(html) {
-    document.getElementById("app").innerHTML = html;
+  async function apiPost(path, body) {
+    var url = API_URL + path;
+    if (!url) return null;
+    try {
+      body.init_data = tg.initData;
+      var r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      return await r.json();
+    } catch (e) {
+      return { error: "network_error" };
+    }
   }
 
-  function goHome() {
-    state.screen = "home";
+  function fmtPrice(v, c) { var s = SYM[c] || c+" "; var n = parseFloat(v); return isNaN(n) ? v : s + n.toLocaleString("pt-BR", {minimumFractionDigits: 2}); }
+  function pct(a, b) { a = parseFloat(a); b = parseFloat(b); if (!a || !b) return ""; var d = ((b - a) / a) * 100; var sign = d > 0 ? "+" : ""; return sign + d.toFixed(1) + "%"; }
+  function esc(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
+
+  var user = tg.initDataUnsafe.user || {};
+  var products = [];
+  var selected = null;
+
+  function render(html) { document.getElementById("app").innerHTML = html; }
+
+  function showToast(msg) {
+    var t = document.createElement("div");
+    t.className = "toast";
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2500);
+  }
+
+  // ── Screens ──────────────────────────────────────────────────────
+  function showHome() {
+    selected = null;
     tg.BackButton.hide();
-    renderHome();
-  }
+    tg.MainButton.hide();
 
-  function showResult(emoji, title, msg, btnText, btnAction) {
-    state.screen = "done";
-    tg.BackButton.show();
-    tg.BackButton.onClick(function () { tg.close(); });
-
-    render(
-      '<div class="result-screen">' +
-      '<span class="big-emoji">' + emoji + '</span>' +
-      '<h2>' + title + '</h2>' +
-      '<p>' + msg + '</p>' +
-      '<div class="mt-16 flex flex-center">' +
-      '<button class="btn btn-primary" onclick="' + btnAction + '">' + btnText + '</button>' +
-      '<button class="btn btn-secondary" onclick="tg.close()">Fechar</button>' +
-      '</div></div>'
-    );
-  }
-
-  // ── Screens ───────────────────────────────────────────────────────
-  function renderHome() {
-    state.screen = "home";
-    tg.BackButton.hide();
-
-    render(
-      '<div class="header">' +
-      '<h1>📊 ProductTracker</h1>' +
-      '<p>Olá, ' + escapeHtml(userName) + '! Escolha uma ação:</p>' +
-      '</div>' +
-
-      '<div class="action-grid">' +
-      '<div class="action-card" onclick="sendList()">' +
-      '<span class="emoji">📋</span>' +
-      '<span class="label">Ver produtos</span>' +
-      '</div>' +
-      '<div class="action-card" onclick="askProductId(\'set_target\')">' +
-      '<span class="emoji">🎯</span>' +
-      '<span class="label">Definir alvo</span>' +
-      '</div>' +
-      '<div class="action-card" onclick="askProductId(\'remove\')">' +
-      '<span class="emoji">🗑️</span>' +
-      '<span class="label">Remover</span>' +
-      '</div>' +
-      '<div class="action-card" onclick="askProductId(\'remove_target\')">' +
-      '<span class="emoji">🔕</span>' +
-      '<span class="label">Remover alvo</span>' +
-      '</div>' +
-      '</div>' +
-
-      '<div class="card" style="text-align:center;padding:12px;font-size:13px;color:var(--tg-hint)">' +
-      'As ações são executadas no chat do bot. Abra o chat para ver a confirmação.' +
-      '</div>'
-    );
-  }
-
-  function askProductId(action) {
-    state.selectedAction = action;
-    state.screen = "ask_product";
-
-    var actionLabels = {
-      set_target: "Definir alvo",
-      remove: "Remover",
-      remove_target: "Remover alvo",
-    };
-
-    tg.BackButton.show();
-    tg.BackButton.onClick(function () { goHome(); });
-
-    render(
-      '<div class="header">' +
-      '<h1>' + actionLabels[action] + '</h1>' +
-      '<p>Digite o número do produto (use /list para ver os IDs).</p>' +
-      '</div>' +
-      '<input id="pid-input" class="w-full" style="padding:12px 14px;font-size:16px;border:1px solid var(--tg-border);border-radius:8px;background:var(--tg-bg);color:var(--tg-text);font-family:inherit;outline:none" placeholder="Ex: 1" autofocus>' +
-      '<div class="flex mt-16">' +
-      '<button class="btn btn-primary w-full" onclick="confirmProductId()">Continuar</button>' +
-      '</div>' +
-      '<div class="mt-16 flex flex-center">' +
-      '<button class="btn btn-secondary" onclick="goHome()">Voltar</button>' +
-      '</div>'
-    );
-  }
-
-  function confirmProductId() {
-    var input = document.getElementById("pid-input");
-    var pid = parseInt(input.value);
-    if (!pid || pid < 1) {
-      tg.showAlert("Digite um número válido.");
+    if (!products.length) {
+      render('<div class="loading">Carregando produtos...</div>');
+      loadProducts();
       return;
     }
 
-    var action = state.selectedAction;
-
-    if (action === "remove") {
-      sendAction("remove", { product_id: pid });
-      showResult(
-        "🗑️",
-        "Removendo produto...",
-        "O produto #" + pid + " será removido. Confira a confirmação no chat do bot.",
-        "🏠 Voltar ao início", "goHome()"
-      );
-    } else if (action === "remove_target") {
-      sendAction("remove_target", { product_id: pid });
-      showResult(
-        "🔕",
-        "Removendo alvo...",
-        "O alvo do produto #" + pid + " será removido. Confira no chat.",
-        "🏠 Voltar ao início", "goHome()"
-      );
-    } else if (action === "set_target") {
-      askTargetValue(pid);
-    }
+    var html = '<div class="header"><h1>📊 Produtos</h1><p>' + esc(user.first_name || "Usuário") + ', ' + products.length + ' monitorado(s)</p></div>';
+    products.forEach(function (p) {
+      var m = MKT[p.marketplace] || { l: "?", c: "ml" };
+      var pr = fmtPrice(p.last_price, p.currency_id);
+      var change = pct(p.initial_price, p.last_price);
+      var dir = parseFloat(p.last_price) < parseFloat(p.initial_price) ? "down" : "up";
+      html += '<div class="card" onclick="showDetail(' + p.id + ')"><div class="row">' +
+        '<div class="icon ' + m.c + '">' + m.l + '</div>' +
+        '<div class="info"><div class="title">' + esc(p.title && p.title.length > 45 ? p.title.slice(0,45)+"…" : p.title) + '</div>' +
+        '<div class="subtitle"><span class="price ' + dir + '">' + pr + '</span> <span style="font-size:11px">' + change + '</span>' +
+        (p.target_price ? '<span class="tag target">🎯 ' + fmtPrice(p.target_price, p.currency_id) + '</span>' : '') +
+        '</div></div></div></div>';
+    });
+    html += '<div style="text-align:center;margin-top:4px;font-size:11px;color:var(--tg-hint)">🔄 Puxe para atualizar</div>';
+    render(html);
   }
 
-  function askTargetValue(productId) {
-    state.selectedProductId = productId;
-    state.screen = "ask_target";
+  async function loadProducts() {
+    try {
+      var data = await apiGet("/api/products");
+      if (data && data.ok) {
+        products = data.products || [];
+      } else {
+        render('<div class="empty"><span class="e">⚠️</span>Erro ao carregar<br><span style="font-size:12px">' + esc(data ? data.error : "sem resposta") + '</span></div>');
+        return;
+      }
+    } catch (e) {
+      render('<div class="empty"><span class="e">📡</span>Erro de conexão<br><span style="font-size:12px">Verifique se a API está no ar</span></div>');
+      return;
+    }
+    showHome();
+  }
 
+  function showDetail(id) {
+    var p = products.find(function (x) { return x.id === id; });
+    if (!p) return;
+    selected = p;
     tg.BackButton.show();
-    tg.BackButton.onClick(function () { goHome(); });
+    tg.BackButton.onClick(function () { showHome(); });
+    tg.MainButton.hide();
 
+    var m = MKT[p.marketplace] || { l: "?", c: "ml" };
+    var pr = fmtPrice(p.last_price, p.currency_id);
+    var initPr = fmtPrice(p.initial_price, p.currency_id);
+    var change = pct(p.initial_price, p.last_price);
+    var dir = parseFloat(p.last_price) < parseFloat(p.initial_price) ? "down" : "up";
+
+    var html = '<div class="detail-screen"><div class="back" onclick="showHome()">← Voltar</div>' +
+      '<div class="card disabled"><div class="row">' +
+      '<div class="icon ' + m.c + '">' + m.l + '</div>' +
+      '<div class="info"><div class="title">' + esc(p.title || "") + '</div>' +
+      '<div class="subtitle">Cadastro: ' + initPr + '</div></div></div></div>' +
+      '<div style="font-size:24px;font-weight:700;text-align:center;padding:8px 0">' +
+      '<span class="price ' + dir + '">' + pr + '</span>' +
+      '<span style="font-size:14px;font-weight:400;margin-left:8px;color:var(--tg-hint)">' + change + '</span></div>' +
+      (p.target_price ? '<div style="text-align:center;font-size:13px;color:var(--tg-hint)">🎯 Meta: ' + fmtPrice(p.target_price, p.currency_id) + '</div>' : '');
+
+    html += '<div class="btn-group">';
+    if (p.target_price) {
+      html += '<div class="btn" onclick="editTarget()"><span class="emoji">✏️</span> Alterar meta (' + fmtPrice(p.target_price, p.currency_id) + ')</div>' +
+        '<div class="btn danger" onclick="removeTarget()"><span class="emoji">🔕</span> Remover meta</div>';
+    } else {
+      html += '<div class="btn" onclick="editTarget()"><span class="emoji">🎯</span> Definir meta de preço</div>';
+    }
+    html += '<div class="btn danger" onclick="doRemove()"><span class="emoji">🗑️</span> Parar de monitorar</div></div></div>';
+
+    render(html);
+  }
+
+  function editTarget() {
+    if (!selected) return;
+    var cur = selected.target_price ? " (atual: " + fmtPrice(selected.target_price, selected.currency_id) + ")" : "";
     render(
-      '<div class="header">' +
-      '<h1>🎯 Definir alvo</h1>' +
-      '<p>Produto #' + productId + '.<br>Qual o valor mínimo para te avisar?</p>' +
-      '</div>' +
+      '<div class="detail-screen"><div class="back" onclick="showDetail(' + selected.id + ')">← Voltar</div>' +
+      '<div style="margin-top:8px"><strong>🎯 Meta de preço</strong>' +
+      '<p style="font-size:13px;color:var(--tg-hint);margin:4px 0 12px">Valor mínimo para ser avisado' + cur + '</p>' +
       '<div class="input-group">' +
-      '<span style="padding:12px 0;font-size:16px;font-weight:600;color:var(--tg-hint)">R$</span>' +
-      '<input id="target-input" type="number" step="0.01" min="0" placeholder="Ex: 50,00" autofocus>' +
-      '</div>' +
-      '<div class="flex">' +
-      '<button class="btn btn-primary w-full" onclick="confirmTarget()">Salvar alvo</button>' +
-      '</div>' +
-      '<div class="mt-16 flex flex-center">' +
-      '<button class="btn btn-secondary" onclick="goHome()">Cancelar</button>' +
-      '</div>'
+      '<span style="padding:10px 0;font-size:16px;font-weight:600;color:var(--tg-hint)">R$</span>' +
+      '<input id="tv" type="number" step="0.01" min="0" placeholder="Ex: 50" autofocus></div>' +
+      '<div style="display:flex;gap:8px;margin-top:8px">' +
+      '<button class="btn" style="flex:1;text-align:center" onclick="confirmTarget()">✅ Salvar</button>' +
+      '<button class="btn danger" style="flex:1;text-align:center" onclick="showDetail(' + selected.id + ')">Cancelar</button></div></div>'
     );
+    tg.BackButton.onClick(function () { showDetail(selected.id); });
   }
 
-  function confirmTarget() {
-    var input = document.getElementById("target-input");
+  async function confirmTarget() {
+    var input = document.getElementById("tv");
     var val = parseFloat(input.value.replace(",", "."));
-    if (isNaN(val) || val < 0) {
-      tg.showAlert("Digite um valor numérico válido.");
-      return;
+    if (isNaN(val) || val < 0) { showToast("Digite um valor válido"); return; }
+    if (val === 0) { removeTarget(); return; }
+
+    var res = await apiPost("/api/action", { action: "set_target", product_id: selected.id, target_price: val });
+    if (res && res.ok) {
+      showToast("🎯 Meta alterada para " + fmtPrice(val, selected.currency_id));
+      await loadProducts();
+    } else {
+      showToast("Erro: " + (res ? res.error : "sem resposta"));
     }
-    if (val === 0) {
-      sendAction("remove_target", { product_id: state.selectedProductId });
-      showResult("🔕", "Alvo removido", "Confira a confirmação no chat.", "🏠 Voltar", "goHome()");
-      return;
-    }
-    sendAction("set_target", { product_id: state.selectedProductId, target_price: val });
-    showResult(
-      "🎯",
-      "Alvo definido!",
-      "Alvo de " + fmtPrice(val, "BRL") + " enviado para o produto #" + state.selectedProductId + ". Confira no chat.",
-      "🏠 Voltar ao início", "goHome()"
-    );
   }
 
-  function sendList() {
-    sendAction("list");
-    showResult(
-      "📋",
-      "Lista enviada!",
-      "Abra o chat do bot para ver sua lista de produtos com preços e variações.",
-      "🏠 Voltar ao início", "goHome()"
-    );
+  async function removeTarget() {
+    var res = await apiPost("/api/action", { action: "remove_target", product_id: selected.id });
+    if (res && res.ok) {
+      showToast("🔕 Meta removida");
+      await loadProducts();
+    } else {
+      showToast("Erro: " + (res ? res.error : "sem resposta"));
+    }
   }
 
-  function escapeHtml(text) {
-    if (!text) return "";
-    var d = document.createElement("div");
-    d.textContent = text;
-    return d.innerHTML;
+  async function doRemove() {
+    if (!selected) return;
+    tg.showConfirm("Remover \"" + selected.title.slice(0, 40) + "\"?", async function (ok) {
+      if (ok) {
+        var res = await apiPost("/api/action", { action: "remove", product_id: selected.id });
+        if (res && res.ok) {
+          showToast("🗑️ Produto removido");
+          await loadProducts();
+        } else {
+          showToast("Erro: " + (res ? res.error : "sem resposta"));
+        }
+      }
+    });
   }
 
   // ── Init ─────────────────────────────────────────────────────────
-  window.sendList = sendList;
-  window.askProductId = askProductId;
-  window.confirmProductId = confirmProductId;
-  window.askTargetValue = askTargetValue;
+  window.showHome = showHome;
+  window.showDetail = showDetail;
+  window.editTarget = editTarget;
   window.confirmTarget = confirmTarget;
-  window.goHome = goHome;
+  window.removeTarget = removeTarget;
+  window.doRemove = doRemove;
 
-  renderHome();
+  // Set API URL from the page URL query param or use localhost for dev
+  var params = new URLSearchParams(window.location.search);
+  API_URL = params.get("api_url") || localStorage.getItem("api_url") || "http://localhost:9099";
+  localStorage.setItem("api_url", API_URL);
+
+  console.log("API_URL:", API_URL);
+  showHome();
 })();
 </script>
 </body>
