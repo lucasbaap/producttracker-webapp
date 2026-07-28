@@ -23,12 +23,13 @@
   .header-left p { color: var(--muted); font-size: 13px; margin-top: 2px; }
   .header-actions { display: flex; gap: 6px; }
   .icon-btn {
-    width: 38px; height: 38px; border-radius: 50%; background: var(--card);
+    width: 36px; height: 36px; border-radius: 10px; background: var(--card);
     border: 1px solid var(--border); display: flex; align-items: center;
-    justify-content: center; cursor: pointer; font-size: 17px;
-    color: var(--muted); transition: all 0.15s;
+    justify-content: center; cursor: pointer; color: var(--muted); transition: all 0.15s;
   }
+  .icon-btn svg { width: 16px; height: 16px; }
   .icon-btn:active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .icon-btn:active svg { color: #fff; }
 
   .toolbar { display: flex; gap: 8px; margin-bottom: 14px; }
   .search-bar {
@@ -239,8 +240,10 @@
     var html =
       '<div class="header"><div class="header-left"><h1>Meus produtos</h1><p>' + subtitle + '</p></div>' +
       '<div class="header-actions">' +
-      '<div class="icon-btn" onclick="enterDeleteMode()" title="Remover">🗑</div>' +
-      '<div class="icon-btn" onclick="location.reload()" title="Atualizar">↻</div>' +
+      '<div class="icon-btn" onclick="enterDeleteMode()" title="Remover">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></div>' +
+      '<div class="icon-btn" onclick="location.reload()" title="Atualizar">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115.36-6.36L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15.36 6.36L3 16"/></svg></div>' +
       '</div></div>' + renderToolbar();
 
     if (!count) { html += '<div class="empty-state"><span class="icon">🔍</span><p>Nenhum produto encontrado<br>para "' + esc(searchQuery) + '"</p></div>'; render(html); return; }
@@ -270,22 +273,23 @@
     tg.MainButton.show(); tg.MainButton.setText("Remover"); tg.MainButton.setParams({ color: "#ef4444" });
     tg.MainButton.onClick(function () { confirmDelete(); }); tg.MainButton.disable();
 
+    var n = allProducts.length;
     var html = '<div class="header" style="align-items:center"><div class="header-left"><h1>Remover produtos</h1><p>Toque nos itens para selecionar</p></div></div>' +
-      '<div class="btn full" onclick="toggleAll()" style="margin-bottom:14px">' +
-      (Object.keys(selectedIds).length === allProducts.length ? 'Desmarcar todos' : 'Selecionar todos') + '</div>';
+      '<div class="btn full" id="toggle-all-btn" onclick="toggleAll()" style="margin-bottom:14px">Selecionar ' + n + ' produto' + (n !== 1 ? "s" : "") + '</div>';
 
     allProducts.forEach(function (p) {
       var m = MKT[p.marketplace] || { l: "?", c: "ml" };
-      var id = p.id; var sel = selectedIds[id];
+      var id = p.id;
       html += '<div class="card" onclick="toggleSelect(' + id + ')" id="sel-' + id + '"><div class="row">' +
-        '<div class="chk' + (sel ? ' checked' : '') + '" id="chk-' + id + '">' + (sel ? '✓' : '') + '</div>' +
+        '<div class="chk" id="chk-' + id + '"></div>' +
         '<div class="mkt-badge ' + m.c + '">' + m.l + '</div><div class="info">' +
         '<div class="p-title">' + esc(p.title || "").slice(0, 52) + '</div>' +
         '<div class="p-meta">' + fmtPrice(p.last_price, p.currency_id) + '</div></div></div></div>';
     });
 
     html += '<div class="btn full red" onclick="deleteAll()" style="margin-top:14px">Remover todos os produtos</div>' +
-      '<div class="btn full" onclick="showHome()" style="margin-top:8px">Cancelar</div>';
+      '<div class="btn full" onclick="showHome()" style="margin-top:4px">Cancelar</div>';
+
     render(html);
   }
 
@@ -296,13 +300,14 @@
     var count = Object.keys(selectedIds).length;
     tg.MainButton.setText("Remover " + count + " produto" + (count !== 1 ? "s" : ""));
     count > 0 ? tg.MainButton.enable() : tg.MainButton.disable();
-    // Update toggle all button text
-    var allBtn = document.querySelector(".btn.full");
-    if (allBtn) allBtn.textContent = count === allProducts.length ? "Desmarcar todos" : "Selecionar todos";
+    // Update toggle all button text using specific ID
+    var allBtn = document.getElementById("toggle-all-btn");
+    if (allBtn) allBtn.textContent = count === allProducts.length ? "Desmarcar todos" : "Selecionar " + allProducts.length + " produto" + (allProducts.length !== 1 ? "s" : "");
   }
 
   function toggleAll() {
     var allSel = Object.keys(selectedIds).length === allProducts.length;
+    var n = allProducts.length;
     allProducts.forEach(function (p) {
       var id = p.id;
       if (allSel) { delete selectedIds[id]; } else { selectedIds[id] = true; }
@@ -312,8 +317,8 @@
     var count = Object.keys(selectedIds).length;
     tg.MainButton.setText("Remover " + count + " produto" + (count !== 1 ? "s" : ""));
     count > 0 ? tg.MainButton.enable() : tg.MainButton.disable();
-    var allBtn = document.querySelector(".btn.full");
-    if (allBtn) allBtn.textContent = count === allProducts.length ? "Desmarcar todos" : "Selecionar todos";
+    var allBtn = document.getElementById("toggle-all-btn");
+    if (allBtn) allBtn.textContent = count === n ? "Desmarcar todos" : "Selecionar " + n + " produto" + (n !== 1 ? "s" : "");
   }
 
   function confirmDelete() {
