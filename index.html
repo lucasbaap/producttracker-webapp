@@ -136,9 +136,11 @@
 
   // ── Config ────────────────────────────────────────────────────────
   var SYM = { BRL: "R$", ARS: "$", MXN: "$", CLP: "$", COP: "$", PEN: "S/" };
-  var MKT = { mercadolibre: { l: "ML", c: "ml" }, amazon: { l: "AM", c: "am" },
-              shopee: { l: "SH", c: "sh" }, aliexpress: { l: "AE", c: "ae" },
-              kabum: { l: "KB", c: "kb" } };
+  var MKT = { mercadolibre: { l: "ML", c: "ml", full: "Mercado Livre", prep: "no" },
+              amazon: { l: "AM", c: "am", full: "Amazon", prep: "na" },
+              shopee: { l: "SH", c: "sh", full: "Shopee", prep: "na" },
+              aliexpress: { l: "AE", c: "ae", full: "AliExpress", prep: "no" },
+              kabum: { l: "KB", c: "kb", full: "KaBuM!", prep: "na" } };
   var API_URL = "";
 
   // ── API Helpers ──────────────────────────────────────────────────
@@ -172,6 +174,9 @@
   var user = tg.initDataUnsafe.user || {};
   var products = [];
   var selected = null;
+  var productsLoaded = false;
+  var deleteMode = false;
+  var selectedIds = {};
 
   function render(html) { document.getElementById("app").innerHTML = html; }
 
@@ -186,16 +191,36 @@
   // ── Screens ──────────────────────────────────────────────────────
   function showHome() {
     selected = null;
+    deleteMode = false;
+    selectedIds = {};
     tg.BackButton.hide();
     tg.MainButton.hide();
 
-    if (!products.length) {
+    if (!productsLoaded) {
       render('<div class="loading">Carregando produtos...</div>');
       loadProducts();
       return;
     }
 
-    var html = '<div class="header"><h1>📊 Produtos</h1><p>' + esc(user.first_name || "Usuário") + ', ' + products.length + ' monitorado(s)</p></div>';
+    if (!products.length) {
+      render(
+        '<div class="header"><h1>📊 Produtos</h1><p>Nenhum produto está sendo monitorado no momento</p></div>' +
+        '<div class="empty" style="padding:24px;text-align:center;color:var(--tg-hint)">' +
+        '<div style="font-size:40px;margin-bottom:12px">📭</div>' +
+        'Envie um link de produto no chat do bot para começar.</div>'
+      );
+      return;
+    }
+
+    var countText = "Estamos monitorando " + products.length + " produto" + (products.length !== 1 ? "s" : "");
+    var html =
+      '<div class="header" style="display:flex;align-items:center;justify-content:space-between">' +
+      '<div><h1>📊 Produtos</h1><p>' + countText + '</p></div>' +
+      '<div style="display:flex;gap:8px">' +
+      '<div class="btn-icon" onclick="enterDeleteMode()" style="width:36px;height:36px;border-radius:50%;background:var(--tg-card);border:1px solid var(--tg-border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px">🗑️</div>' +
+      '<div class="btn-icon" onclick="location.reload()" style="width:36px;height:36px;border-radius:50%;background:var(--tg-card);border:1px solid var(--tg-border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px">🔄</div>' +
+      '</div></div>';
+
     products.forEach(function (p) {
       var m = MKT[p.marketplace] || { l: "?", c: "ml" };
       var pr = fmtPrice(p.last_price, p.currency_id);
@@ -208,17 +233,135 @@
         (p.target_price ? '<span class="tag target">🎯 ' + fmtPrice(p.target_price, p.currency_id) + '</span>' : '') +
         '</div></div></div></div>';
     });
-    html += '<div style="text-align:center;margin-top:4px;font-size:11px;color:var(--tg-hint)">🔄 Puxe para atualizar</div>';
+
     render(html);
   }
 
+  function enterDeleteMode() {
+    deleteMode = true;
+    selectedIds = {};
+    tg.BackButton.show();
+    tg.BackButton.onClick(function () { showHome(); });
+    tg.MainButton.show();
+    tg.MainButton.setText("Remover selecionados");
+    tg.MainButton.setParams({ color: "#e74c3c" });
+    tg.MainButton.onClick(function () { confirmDelete(); });
+    tg.MainButton.disable();
+
+    var countText = "Estamos monitorando " + products.length + " produto" + (products.length !== 1 ? "s" : "");
+    var html =
+      '<div class="header">' +
+      '<h1>🗑️ Remover produtos</h1>' +
+      '<p>Selecione os itens para remover</p></div>' +
+      '<div style="margin-bottom:12px">' +
+      '<button class="btn btn-secondary" style="width:100%;text-align:center" onclick="selectAll()">✅ Selecionar todos</button>' +
+      '</div>';
+
+    products.forEach(function (p) {
+      var m = MKT[p.marketplace] || { l: "?", c: "ml" };
+      var pr = fmtPrice(p.last_price, p.currency_id);
+      html += '<div class="card" onclick="toggleSelect(' + p.id + ')" id="sel-' + p.id + '"><div class="row">' +
+        '<div style="width:22px;height:22px;border-radius:4px;border:2px solid var(--tg-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px" id="chk-' + p.id + '"></div>' +
+        '<div class="icon ' + m.c + '">' + m.l + '</div>' +
+        '<div class="info"><div class="title">' + esc(p.title && p.title.length > 45 ? p.title.slice(0,45)+"…" : p.title) + '</div>' +
+        '<div class="subtitle">' + pr + '</div></div></div></div>';
+    });
+
+    html += '<div style="margin-top:8px">' +
+      '<button class="btn btn-danger" style="width:100%;text-align:center" onclick="deleteAll()">🗑️ Remover todos os produtos</button>' +
+      '</div>';
+
+    render(html);
+  }
+
+  function toggleSelect(id) {
+    var card = document.getElementById("sel-" + id);
+    var chk = document.getElementById("chk-" + id);
+    if (selectedIds[id]) {
+      delete selectedIds[id];
+      chk.textContent = "";
+      chk.style.background = "transparent";
+      chk.style.borderColor = "var(--tg-border)";
+      if (card) card.style.opacity = "1";
+    } else {
+      selectedIds[id] = true;
+      chk.textContent = "✓";
+      chk.style.background = "var(--tg-accent)";
+      chk.style.color = "#fff";
+      chk.style.borderColor = "var(--tg-accent)";
+      if (card) card.style.opacity = "0.6";
+    }
+    var count = Object.keys(selectedIds).length;
+    tg.MainButton.setText("Remover " + count + " produto" + (count !== 1 ? "s" : ""));
+    if (count > 0) tg.MainButton.enable(); else tg.MainButton.disable();
+  }
+
+  function selectAll() {
+    var allSelected = products.every(function (p) { return selectedIds[p.id]; });
+    products.forEach(function (p) {
+      if (allSelected) {
+        // Deselect all
+        delete selectedIds[p.id];
+        var chk = document.getElementById("chk-" + p.id);
+        var card = document.getElementById("sel-" + p.id);
+        if (chk) { chk.textContent = ""; chk.style.background = "transparent"; chk.style.borderColor = "var(--tg-border)"; }
+        if (card) card.style.opacity = "1";
+      } else {
+        // Select all
+        selectedIds[p.id] = true;
+        var chk = document.getElementById("chk-" + p.id);
+        var card = document.getElementById("sel-" + p.id);
+        if (chk) { chk.textContent = "✓"; chk.style.background = "var(--tg-accent)"; chk.style.color = "#fff"; chk.style.borderColor = "var(--tg-accent)"; }
+        if (card) card.style.opacity = "0.6";
+      }
+    });
+    var count = Object.keys(selectedIds).length;
+    if (count > 0) {
+      tg.MainButton.setText("Remover " + count + " produto" + (count !== 1 ? "s" : ""));
+      tg.MainButton.enable();
+    } else {
+      tg.MainButton.setText("Remover selecionados");
+      tg.MainButton.disable();
+    }
+  }
+
+  function confirmDelete() {
+    var ids = Object.keys(selectedIds);
+    if (!ids.length) return;
+    tgConfirm("Remover " + ids.length + " produto" + (ids.length !== 1 ? "s" : "") + " selecionado" + (ids.length !== 1 ? "s" : "") + "?").then(function (ok) {
+      if (!ok) return;
+      deleteProducts(ids);
+    });
+  }
+
+  function deleteAll() {
+    tgConfirm("Remover TODOS os " + products.length + " produto" + (products.length !== 1 ? "s" : "") + "?").then(function (ok) {
+      if (!ok) return;
+      deleteProducts(products.map(function (p) { return p.id; }));
+    });
+  }
+
+  async function deleteProducts(ids) {
+    for (var i = 0; i < ids.length; i++) {
+      var res = await apiPost("/api/action", { action: "remove", product_id: parseInt(ids[i]) });
+      if (!res || !res.ok) {
+        showToast("Erro ao remover produto #" + ids[i]);
+        return;
+      }
+    }
+    showToast("🗑️ " + ids.length + " produto" + (ids.length !== 1 ? "s" : "") + " removido" + (ids.length !== 1 ? "s" : ""));
+    await loadProducts();
+  }
+
   async function loadProducts() {
-    var url = "/api/products?init_data=" + encodeURIComponent(tg.initData);
+    var cache_buster = Date.now();
+    var url = "/api/products?_cb=" + cache_buster + "&init_data=" + encodeURIComponent(tg.initData);
     try {
       var resp = await fetch(url);
       var data = await resp.json();
       if (data && data.ok) {
         products = data.products || [];
+        productsLoaded = true;
       } else {
         render('<div class="empty"><span class="e">⚠️</span>Erro ' + (data ? data.error : "sem resposta") + '<br><span style="font-size:11px;color:var(--tg-hint)">URL: ' + url.slice(0,60) + '…</span></div>');
         return;
@@ -242,17 +385,38 @@
     var pr = fmtPrice(p.last_price, p.currency_id);
     var initPr = fmtPrice(p.initial_price, p.currency_id);
     var change = pct(p.initial_price, p.last_price);
-    var dir = parseFloat(p.last_price) < parseFloat(p.initial_price) ? "down" : "up";
+    var changeNum = parseFloat(p.last_price) - parseFloat(p.initial_price);
+    var changeSign = changeNum >= 0 ? "+" : "";
+    var changeAbs = Math.abs(changeNum);
+    var dir = changeNum < 0 ? "down" : "up";
+    var linkUrl = p.affiliate_url || p.url || "";
+    var mktLabel = MKT[p.marketplace] ? MKT[p.marketplace].full : p.marketplace;
 
-    var html = '<div class="detail-screen"><div class="back" onclick="showHome()">← Voltar</div>' +
+    var html = '<div class="detail-screen">' +
+      '<div class="back" onclick="showHome()">← Voltar</div>' +
       '<div class="card disabled"><div class="row">' +
       '<div class="icon ' + m.c + '">' + m.l + '</div>' +
       '<div class="info"><div class="title">' + esc(p.title || "") + '</div>' +
-      '<div class="subtitle">Cadastro: ' + initPr + '</div></div></div></div>' +
-      '<div style="font-size:24px;font-weight:700;text-align:center;padding:8px 0">' +
-      '<span class="price ' + dir + '">' + pr + '</span>' +
-      '<span style="font-size:14px;font-weight:400;margin-left:8px;color:var(--tg-hint)">' + change + '</span></div>' +
-      (p.target_price ? '<div style="text-align:center;font-size:13px;color:var(--tg-hint)">🎯 Meta: ' + fmtPrice(p.target_price, p.currency_id) + '</div>' : '');
+      '<div class="subtitle">' + mktLabel + '</div></div></div></div>' +
+
+      // Ajuste 5: Preços claros
+      '<div style="padding:0 4px 12px">' +
+      '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--tg-border)">' +
+      '<span style="color:var(--tg-hint);font-size:13px">Preço no cadastro</span>' +
+      '<span style="font-size:14px">' + initPr + '</span></div>' +
+      '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--tg-border)">' +
+      '<span style="color:var(--tg-hint);font-size:13px">Preço atual</span>' +
+      '<span style="font-size:16px;font-weight:700" class="price ' + dir + '">' + pr + '</span></div>' +
+      '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--tg-border)">' +
+      '<span style="color:var(--tg-hint);font-size:13px">Variação</span>' +
+      '<span style="font-size:14px;font-weight:600" class="price ' + dir + '">' + changeSign + changeAbs.toLocaleString("pt-BR", {minimumFractionDigits: 2}) + ' (' + change + ')</span></div>' +
+      (p.target_price ? '<div style="display:flex;justify-content:space-between;padding:8px 0">' +
+      '<span style="color:var(--tg-hint);font-size:13px">🎯 Meta</span>' +
+      '<span style="font-size:14px;font-weight:600;color:var(--tg-accent)">' + fmtPrice(p.target_price, p.currency_id) + '</span></div>' : '') +
+      '</div>' +
+
+      // Ajuste 4: Link de afiliado
+      (linkUrl ? '<div style="margin-bottom:12px"><a href="' + linkUrl + '" target="_blank" rel="noopener" style="display:block;padding:12px 14px;border:1px solid var(--tg-border);border-radius:12px;background:var(--tg-card);color:var(--tg-accent);text-decoration:none;font-size:14px;font-weight:600;text-align:center">🔗 Ver ' + (MKT[p.marketplace] ? MKT[p.marketplace].prep : "no") + ' ' + mktLabel + '</a></div>' : '');
 
     html += '<div class="btn-group">';
     if (p.target_price) {
@@ -308,19 +472,23 @@
     }
   }
 
+  function tgConfirm(msg) {
+    return new Promise(function (resolve) {
+      tg.showConfirm(msg, function (ok) { resolve(ok); });
+    });
+  }
+
   async function doRemove() {
     if (!selected) return;
-    tg.showConfirm("Remover \"" + selected.title.slice(0, 40) + "\"?", async function (ok) {
-      if (ok) {
-        var res = await apiPost("/api/action", { action: "remove", product_id: selected.id });
-        if (res && res.ok) {
-          showToast("🗑️ Produto removido");
-          await loadProducts();
-        } else {
-          showToast("Erro: " + (res ? res.error : "sem resposta"));
-        }
-      }
-    });
+    var ok = await tgConfirm("Remover \"" + selected.title.slice(0, 40) + "\"?");
+    if (!ok) return;
+    var res = await apiPost("/api/action", { action: "remove", product_id: selected.id });
+    if (res && res.ok) {
+      showToast("🗑️ Removido!");
+      await loadProducts();
+    } else {
+      showToast("Erro: " + (res ? res.error : "sem resposta"));
+    }
   }
 
   // ── Init ─────────────────────────────────────────────────────────
@@ -330,6 +498,11 @@
   window.confirmTarget = confirmTarget;
   window.removeTarget = removeTarget;
   window.doRemove = doRemove;
+  window.enterDeleteMode = enterDeleteMode;
+  window.toggleSelect = toggleSelect;
+  window.selectAll = selectAll;
+  window.confirmDelete = confirmDelete;
+  window.deleteAll = deleteAll;
 
   showHome();
 })();
