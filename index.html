@@ -16,9 +16,7 @@
     --tg-success: #27ae60;
     --tg-card: #1e2a38;
     --tg-border: #253242;
-    --tg-link: #5b9bd5;
     --tg-section-header: #6a7b8d;
-    --tg-destructive: #e74c3c;
     --radius: 12px;
     --radius-sm: 8px;
   }
@@ -33,29 +31,11 @@
     max-width: 600px;
     margin: 0 auto;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
 
-  .header {
-    margin-bottom: 24px;
-  }
-  .header h1 {
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 4px;
-  }
-  .header p {
-    color: var(--tg-hint);
-    font-size: 14px;
-  }
-
-  .section-title {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--tg-section-header);
-    margin: 24px 0 12px 4px;
-  }
+  .header { margin-bottom: 20px; }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .header p { color: var(--tg-hint); font-size: 14px; }
 
   .card {
     background: var(--tg-card);
@@ -63,131 +43,104 @@
     border-radius: var(--radius);
     padding: 16px;
     margin-bottom: 12px;
-    transition: background 0.15s;
   }
-  .card:active { background: var(--tg-bg-secondary); }
 
-  .product-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  .action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
   }
-  .product-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 13px;
-    flex-shrink: 0;
-  }
-  .product-icon.ml { background: #fff159; color: #333; }
-  .product-icon.am { background: #ff9900; color: #fff; }
-  .product-icon.sh { background: #ee4d2d; color: #fff; }
-  .product-icon.ae { background: #e3312b; color: #fff; }
-  .product-icon.kb { background: #0759e6; color: #fff; }
 
-  .product-info { flex: 1; min-width: 0; }
-  .product-title {
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1.3;
-    margin-bottom: 2px;
-    /* single-line truncate */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .product-subtitle {
-    font-size: 12px;
-    color: var(--tg-hint);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .price { color: var(--tg-text); }
-  .price-change { font-weight: 600; }
-  .price-change.down { color: var(--tg-success); }
-  .price-change.up { color: var(--tg-danger); }
-
-  .action-btn {
-    display: block;
-    width: 100%;
-    padding: 12px 16px;
-    margin-bottom: 8px;
+  .action-card {
+    background: var(--tg-card);
     border: 1px solid var(--tg-border);
     border-radius: var(--radius);
-    background: var(--tg-card);
-    color: var(--tg-text);
-    font-size: 15px;
-    font-family: inherit;
-    text-align: left;
+    padding: 20px 14px;
+    text-align: center;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
-  .action-btn:active {
+  .action-card:active {
     background: var(--tg-accent);
-    color: var(--tg-accent-text);
     border-color: var(--tg-accent);
   }
-  .action-btn.danger:active {
-    background: var(--tg-destructive);
-    border-color: var(--tg-destructive);
-    color: #fff;
+  .action-card.danger:active {
+    background: var(--tg-danger);
+    border-color: var(--tg-danger);
   }
-  .action-btn .emoji { margin-right: 8px; }
+  .action-card .emoji { font-size: 28px; display: block; margin-bottom: 6px; }
+  .action-card .label { font-size: 13px; font-weight: 600; }
 
-  .target-input-group {
+  .step-indicator {
     display: flex;
     gap: 8px;
-    margin-top: 8px;
+    align-items: center;
+    justify-content: center;
+    margin: 16px 0;
   }
-  .target-input-group input {
+  .step-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--tg-border);
+    transition: background 0.3s;
+  }
+  .step-dot.active { background: var(--tg-accent); }
+
+  .result-screen {
+    text-align: center;
+    padding: 40px 16px;
+  }
+  .result-screen .big-emoji { font-size: 48px; display: block; margin-bottom: 16px; }
+  .result-screen h2 { font-size: 18px; margin-bottom: 8px; }
+  .result-screen p { color: var(--tg-hint); font-size: 14px; line-height: 1.5; }
+
+  .input-group {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0;
+  }
+  .input-group input {
     flex: 1;
-    padding: 10px 12px;
+    padding: 12px 14px;
     font-size: 16px;
     border: 1px solid var(--tg-border);
     border-radius: var(--radius-sm);
     background: var(--tg-bg);
     color: var(--tg-text);
     font-family: inherit;
+    outline: none;
   }
-  .target-input-group button {
-    padding: 10px 16px;
-    font-size: 15px;
-    background: var(--tg-accent);
-    color: var(--tg-accent-text);
+  .input-group input:focus { border-color: var(--tg-accent); }
+
+  .btn {
+    display: inline-block;
+    padding: 10px 20px;
     border: none;
     border-radius: var(--radius-sm);
+    font-size: 15px;
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
+    transition: opacity 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
+  .btn:active { opacity: 0.7; }
+  .btn-primary { background: var(--tg-accent); color: var(--tg-accent-text); }
+  .btn-danger { background: var(--tg-danger); color: #fff; }
+  .btn-secondary { background: var(--tg-bg-secondary); color: var(--tg-text); border: 1px solid var(--tg-border); }
 
-  .select-product-hint {
-    text-align: center;
-    padding: 48px 16px;
-    color: var(--tg-hint);
-    font-size: 14px;
-  }
-  .select-product-hint .emoji { font-size: 32px; display: block; margin-bottom: 12px; }
+  .flex { display: flex; gap: 8px; }
+  .flex-center { justify-content: center; }
+  .mt-16 { margin-top: 16px; }
+  .mb-12 { margin-bottom: 12px; }
+  .w-full { width: 100%; }
 
-  .loading { text-align: center; padding: 32px; color: var(--tg-hint); }
+  #app > div { animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-  .price-target-badge {
-    display: inline-block;
-    background: var(--tg-accent);
-    color: var(--tg-accent-text);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-left: 6px;
-  }
-
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--tg-border); border-radius: 4px; }
@@ -195,14 +148,7 @@
 </head>
 <body>
 
-<div class="header">
-  <h1>📊 Meus Produtos</h1>
-  <p id="user-greeting">Carregando...</p>
-</div>
-
-<div id="product-list">
-  <div class="loading">Carregando produtos...</div>
-</div>
+<div id="app"></div>
 
 <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
 <script>
@@ -213,193 +159,239 @@
 
   // ── Theme ────────────────────────────────────────────────────────
   function applyTheme() {
-    const scheme = tg.colorScheme; // "light" | "dark"
-    const bg = scheme === "dark" ? "#18222d" : "#ffffff";
-    const bgSecondary = scheme === "dark" ? "#1c2735" : "#f0f2f5";
-    const text = scheme === "dark" ? "#e4e4e4" : "#222222";
-    const hint = scheme === "dark" ? "#7d8b99" : "#8e8e93";
-    const card = scheme === "dark" ? "#1e2a38" : "#ffffff";
-    const border = scheme === "dark" ? "#253242" : "#e0e0e0";
-    const accent = scheme === "dark" ? "#2ea6ff" : "#007aff";
-    const sectionHeader = scheme === "dark" ? "#6a7b8d" : "#8e8e93";
-
-    const root = document.documentElement;
-    root.style.setProperty("--tg-bg", bg);
-    root.style.setProperty("--tg-bg-secondary", bgSecondary);
-    root.style.setProperty("--tg-text", text);
-    root.style.setProperty("--tg-hint", hint);
-    root.style.setProperty("--tg-card", card);
-    root.style.setProperty("--tg-border", border);
-    root.style.setProperty("--tg-accent", accent);
-    root.style.setProperty("--tg-section-header", sectionHeader);
-
+    var scheme = tg.colorScheme;
+    var root = document.documentElement;
+    if (scheme === "dark") {
+      root.style.setProperty("--tg-bg", "#18222d");
+      root.style.setProperty("--tg-bg-secondary", "#1c2735");
+      root.style.setProperty("--tg-text", "#e4e4e4");
+      root.style.setProperty("--tg-hint", "#7d8b99");
+      root.style.setProperty("--tg-card", "#1e2a38");
+      root.style.setProperty("--tg-border", "#253242");
+      root.style.setProperty("--tg-accent", "#2ea6ff");
+      root.style.setProperty("--tg-section-header", "#6a7b8d");
+    } else {
+      root.style.setProperty("--tg-bg", "#ffffff");
+      root.style.setProperty("--tg-bg-secondary", "#f0f2f5");
+      root.style.setProperty("--tg-text", "#222222");
+      root.style.setProperty("--tg-hint", "#8e8e93");
+      root.style.setProperty("--tg-card", "#ffffff");
+      root.style.setProperty("--tg-border", "#e0e0e0");
+      root.style.setProperty("--tg-accent", "#007aff");
+      root.style.setProperty("--tg-section-header", "#8e8e93");
+    }
     tg.setHeaderColor(scheme === "dark" ? "bg_color" : "bg_color");
-    tg.setBackgroundColor(bg);
+    tg.setBackgroundColor(scheme === "dark" ? "#18222d" : "#ffffff");
   }
-
   applyTheme();
   tg.onEvent("themeChanged", applyTheme);
 
-  // ── User info ────────────────────────────────────────────────────
-  const initData = tg.initDataUnsafe;
-  if (initData && initData.user) {
-    const user = initData.user;
-    const name = user.first_name || "Usuário";
-    document.getElementById("user-greeting").textContent =
-      "Olá, " + name + "! Gerencie seus produtos abaixo.";
-  }
+  // ── User ─────────────────────────────────────────────────────────
+  var initUser = tg.initDataUnsafe.user || {};
+  var userName = initUser.first_name || "Usuário";
 
-  // ── Marketplace config ───────────────────────────────────────────
-  const MKT_ICONS = {
-    mercadolibre: { emoji: "🏷️", label: "ML", cls: "ml" },
-    amazon:       { emoji: "📦", label: "AM", cls: "am" },
-    shopee:       { emoji: "🛒", label: "SH", cls: "sh" },
-    aliexpress:   { emoji: "🌍", label: "AE", cls: "ae" },
-    kabum:        { emoji: "🎮", label: "KB", cls: "kb" },
+  // ── State ─────────────────────────────────────────────────────────
+  var state = {
+    screen: "home",       // home | done_target | done_remove | done_list
+    selectedProductId: null,
+    selectedProductTitle: "",
+    selectedProductCurrency: "BRL",
   };
 
-  function mktConfig(marketplace) {
-    return MKT_ICONS[marketplace] || { emoji: "📦", label: marketplace.slice(0, 2).toUpperCase(), cls: "am" };
+  // ── Helpers ───────────────────────────────────────────────────────
+  var SYMBOLS = { BRL: "R$", ARS: "$", MXN: "$", CLP: "$", COP: "$", PEN: "S/" };
+
+  function fmtPrice(val, cur) {
+    var sym = SYMBOLS[cur] || cur + " ";
+    var n = parseFloat(val);
+    return isNaN(n) ? val : sym + n.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
   }
 
-  // ── Telegram MainButton ──────────────────────────────────────────
-  function hideMainBtn() {
-    tg.MainButton.hide();
-    tg.MainButton.offClick(() => {});
+  function sendAction(action, extra) {
+    var payload = Object.assign({ action: action, init_data: tg.initData }, extra || {});
+    try {
+      tg.sendData(JSON.stringify(payload));
+    } catch (e) {
+      tg.showAlert("Erro ao comunicar com o bot.");
+    }
   }
 
-  function showMainBtn(text, color, handler) {
-    tg.MainButton.setText(text);
-    if (color) tg.MainButton.setParams({ color: color });
-    tg.MainButton.offClick(() => {});
-    tg.MainButton.onClick(handler);
-    tg.MainButton.show();
+  function render(html) {
+    document.getElementById("app").innerHTML = html;
   }
 
-  // ── Render ──────────────────────────────────────────────────────
-  let selectedProduct = null;
-  let allProducts = [];
-
-  function formatPrice(priceText, currencyId) {
-    const symbols = { BRL: "R$", ARS: "$", MXN: "$", CLP: "$", COP: "$", PEN: "S/" };
-    const sym = symbols[currencyId] || currencyId + " ";
-    const num = parseFloat(priceText);
-    if (isNaN(num)) return priceText + "";
-    return sym + num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function goHome() {
+    state.screen = "home";
+    tg.BackButton.hide();
+    renderHome();
   }
 
-  function renderProductList(products) {
-    allProducts = products;
-    const container = document.getElementById("product-list");
+  function showResult(emoji, title, msg, btnText, btnAction) {
+    state.screen = "done";
+    tg.BackButton.show();
+    tg.BackButton.onClick(function () { tg.close(); });
 
-    if (!products || products.length === 0) {
-      container.innerHTML =
-        '<div class="select-product-hint">' +
-        '<span class="emoji">📭</span>Nenhum produto monitorado.<br><br>' +
-        'Envie um link de produto no chat do bot para começar.</div>';
+    render(
+      '<div class="result-screen">' +
+      '<span class="big-emoji">' + emoji + '</span>' +
+      '<h2>' + title + '</h2>' +
+      '<p>' + msg + '</p>' +
+      '<div class="mt-16 flex flex-center">' +
+      '<button class="btn btn-primary" onclick="' + btnAction + '">' + btnText + '</button>' +
+      '<button class="btn btn-secondary" onclick="tg.close()">Fechar</button>' +
+      '</div></div>'
+    );
+  }
+
+  // ── Screens ───────────────────────────────────────────────────────
+  function renderHome() {
+    state.screen = "home";
+    tg.BackButton.hide();
+
+    render(
+      '<div class="header">' +
+      '<h1>📊 ProductTracker</h1>' +
+      '<p>Olá, ' + escapeHtml(userName) + '! Escolha uma ação:</p>' +
+      '</div>' +
+
+      '<div class="action-grid">' +
+      '<div class="action-card" onclick="sendList()">' +
+      '<span class="emoji">📋</span>' +
+      '<span class="label">Ver produtos</span>' +
+      '</div>' +
+      '<div class="action-card" onclick="askProductId(\'set_target\')">' +
+      '<span class="emoji">🎯</span>' +
+      '<span class="label">Definir alvo</span>' +
+      '</div>' +
+      '<div class="action-card" onclick="askProductId(\'remove\')">' +
+      '<span class="emoji">🗑️</span>' +
+      '<span class="label">Remover</span>' +
+      '</div>' +
+      '<div class="action-card" onclick="askProductId(\'remove_target\')">' +
+      '<span class="emoji">🔕</span>' +
+      '<span class="label">Remover alvo</span>' +
+      '</div>' +
+      '</div>' +
+
+      '<div class="card" style="text-align:center;padding:12px;font-size:13px;color:var(--tg-hint)">' +
+      'As ações são executadas no chat do bot. Abra o chat para ver a confirmação.' +
+      '</div>'
+    );
+  }
+
+  function askProductId(action) {
+    state.selectedAction = action;
+    state.screen = "ask_product";
+
+    var actionLabels = {
+      set_target: "Definir alvo",
+      remove: "Remover",
+      remove_target: "Remover alvo",
+    };
+
+    tg.BackButton.show();
+    tg.BackButton.onClick(function () { goHome(); });
+
+    render(
+      '<div class="header">' +
+      '<h1>' + actionLabels[action] + '</h1>' +
+      '<p>Digite o número do produto (use /list para ver os IDs).</p>' +
+      '</div>' +
+      '<input id="pid-input" class="w-full" style="padding:12px 14px;font-size:16px;border:1px solid var(--tg-border);border-radius:8px;background:var(--tg-bg);color:var(--tg-text);font-family:inherit;outline:none" placeholder="Ex: 1" autofocus>' +
+      '<div class="flex mt-16">' +
+      '<button class="btn btn-primary w-full" onclick="confirmProductId()">Continuar</button>' +
+      '</div>' +
+      '<div class="mt-16 flex flex-center">' +
+      '<button class="btn btn-secondary" onclick="goHome()">Voltar</button>' +
+      '</div>'
+    );
+  }
+
+  function confirmProductId() {
+    var input = document.getElementById("pid-input");
+    var pid = parseInt(input.value);
+    if (!pid || pid < 1) {
+      tg.showAlert("Digite um número válido.");
       return;
     }
 
-    let html = '<div class="section-title">Seus produtos (' + products.length + ")</div>";
+    var action = state.selectedAction;
 
-    products.forEach(function (p) {
-      const mkt = mktConfig(p.marketplace);
-      const priceFmt = formatPrice(p.last_price, p.currency_id);
-      const initialFmt = formatPrice(p.initial_price, p.currency_id);
-
-      let priceSubtitle = priceFmt;
-      if (p.last_price !== p.initial_price) {
-        const diff = parseFloat(p.last_price) - parseFloat(p.initial_price);
-        const pct = parseFloat(p.initial_price) > 0
-          ? ((diff / parseFloat(p.initial_price)) * 100).toFixed(1)
-          : "0.0";
-        const dir = diff < 0 ? "down" : "up";
-        const sign = diff < 0 ? "" : "+";
-        priceSubtitle +=
-          ' <span class="price-change ' + dir + '">(' +
-          sign + pct + "%)</span>";
-      }
-
-      html +=
-        '<div class="card product-row" data-id="' +
-        p.id +
-        '" style="cursor:pointer">' +
-        '<div class="product-icon ' + mkt.cls + '">' + mkt.label + "</div>" +
-        '<div class="product-info">' +
-        '<div class="product-title">' + escapeHtml(p.title) + "</div>" +
-        '<div class="product-subtitle">' +
-        '<span class="price">' + priceSubtitle + "</span>" +
-        "</div>" +
-        "</div>" +
-        '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0">' +
-        '<span style="font-size:13px;color:var(--tg-hint)">' + "desde " + initialFmt + "</span>" +
-        (p.target_price
-          ? '<span class="price-target-badge">🎯 ' + formatPrice(p.target_price, p.currency_id) + "</span>"
-          : "") +
-        "</div>" +
-        "</div>";
-    });
-
-    html +=
-      '<div class="section-title">Ações rápidas</div>' +
-      '<button class="action-btn" onclick="refreshList()">' +
-      '  <span class="emoji">🔄</span> Atualizar lista' +
-      "</button>";
-
-    container.innerHTML = html;
-
-    // Click on product card to select it
-    document.querySelectorAll(".card.product-row").forEach(function (card) {
-      card.addEventListener("click", function () {
-        var id = parseInt(this.dataset.id);
-        var p = allProducts.find(function (x) { return x.id === id; });
-        if (p) selectProduct(p);
-      });
-    });
+    if (action === "remove") {
+      sendAction("remove", { product_id: pid });
+      showResult(
+        "🗑️",
+        "Removendo produto...",
+        "O produto #" + pid + " será removido. Confira a confirmação no chat do bot.",
+        "🏠 Voltar ao início", "goHome()"
+      );
+    } else if (action === "remove_target") {
+      sendAction("remove_target", { product_id: pid });
+      showResult(
+        "🔕",
+        "Removendo alvo...",
+        "O alvo do produto #" + pid + " será removido. Confira no chat.",
+        "🏠 Voltar ao início", "goHome()"
+      );
+    } else if (action === "set_target") {
+      askTargetValue(pid);
+    }
   }
 
-  function selectProduct(product) {
-    selectedProduct = product;
-    var container = document.getElementById("product-list");
-    var mkt = mktConfig(product.marketplace);
-    var priceFmt = formatPrice(product.last_price, product.currency_id);
+  function askTargetValue(productId) {
+    state.selectedProductId = productId;
+    state.screen = "ask_target";
 
-    var html =
-      '<div class="section-title">Produto selecionado</div>' +
-      '<div class="card">' +
-      '  <div class="product-row">' +
-      '    <div class="product-icon ' + mkt.cls + '">' + mkt.label + "</div>" +
-      '    <div class="product-info">' +
-      '      <div class="product-title">' + escapeHtml(product.title) + "</div>" +
-      '      <div class="product-subtitle">' + priceFmt + "</div>" +
-      "    </div>" +
-      "  </div>" +
-      "</div>" +
-      '<div class="section-title">Ações</div>' +
-      ((product.target_price)
-        ? (
-          '<button class="action-btn" onclick="setTargetPrice()">' +
-          '  <span class="emoji">✏️</span> Alterar alvo (atual: ' +
-          formatPrice(product.target_price, product.currency_id) + ")" +
-          "</button>" +
-          '<button class="action-btn danger" onclick="removeTarget()">' +
-          '  <span class="emoji">🔕</span> Remover alvo de preço' +
-          "</button>"
-        )
-        : (
-          '<button class="action-btn" onclick="setTargetPrice()">' +
-          '  <span class="emoji">🎯</span> Definir preço alvo' +
-          "</button>"
-        )) +
-      '<button class="action-btn danger" onclick="removeProduct()">' +
-      '  <span class="emoji">🗑️</span> Parar de monitorar' +
-      "</button>" +
-      '<button class="action-btn" onclick="refreshList()">' +
-      '  <span class="emoji">🔙</span> Voltar para lista' +
-      "</button>";
+    tg.BackButton.show();
+    tg.BackButton.onClick(function () { goHome(); });
 
-    container.innerHTML = html;
-    hideMainBtn();
+    render(
+      '<div class="header">' +
+      '<h1>🎯 Definir alvo</h1>' +
+      '<p>Produto #' + productId + '.<br>Qual o valor mínimo para te avisar?</p>' +
+      '</div>' +
+      '<div class="input-group">' +
+      '<span style="padding:12px 0;font-size:16px;font-weight:600;color:var(--tg-hint)">R$</span>' +
+      '<input id="target-input" type="number" step="0.01" min="0" placeholder="Ex: 50,00" autofocus>' +
+      '</div>' +
+      '<div class="flex">' +
+      '<button class="btn btn-primary w-full" onclick="confirmTarget()">Salvar alvo</button>' +
+      '</div>' +
+      '<div class="mt-16 flex flex-center">' +
+      '<button class="btn btn-secondary" onclick="goHome()">Cancelar</button>' +
+      '</div>'
+    );
+  }
+
+  function confirmTarget() {
+    var input = document.getElementById("target-input");
+    var val = parseFloat(input.value.replace(",", "."));
+    if (isNaN(val) || val < 0) {
+      tg.showAlert("Digite um valor numérico válido.");
+      return;
+    }
+    if (val === 0) {
+      sendAction("remove_target", { product_id: state.selectedProductId });
+      showResult("🔕", "Alvo removido", "Confira a confirmação no chat.", "🏠 Voltar", "goHome()");
+      return;
+    }
+    sendAction("set_target", { product_id: state.selectedProductId, target_price: val });
+    showResult(
+      "🎯",
+      "Alvo definido!",
+      "Alvo de " + fmtPrice(val, "BRL") + " enviado para o produto #" + state.selectedProductId + ". Confira no chat.",
+      "🏠 Voltar ao início", "goHome()"
+    );
+  }
+
+  function sendList() {
+    sendAction("list");
+    showResult(
+      "📋",
+      "Lista enviada!",
+      "Abra o chat do bot para ver sua lista de produtos com preços e variações.",
+      "🏠 Voltar ao início", "goHome()"
+    );
   }
 
   function escapeHtml(text) {
@@ -409,129 +401,16 @@
     return d.innerHTML;
   }
 
-  // ── Actions ──────────────────────────────────────────────────────
-  function sendToBot(payload) {
-    try {
-      tg.sendData(JSON.stringify(payload));
-    } catch (e) {
-      tg.showAlert("Erro ao comunicar com o bot. Tente novamente.");
-    }
-  }
-
-  function refreshList() {
-    selectedProduct = null;
-    hideMainBtn();
-    document.getElementById("product-list").innerHTML =
-      '<div class="loading">Carregando produtos...</div>';
-    sendToBot({
-      action: "list",
-      init_data: tg.initData,
-    });
-  }
-
-  function removeProduct() {
-    if (!selectedProduct) return;
-
-    tg.showConfirm(
-      "Tem certeza que deseja parar de monitorar \"" + selectedProduct.title + "\"?",
-      function (ok) {
-        if (ok) {
-          sendToBot({
-            action: "remove",
-            product_id: selectedProduct.id,
-            init_data: tg.initData,
-          });
-          selectedProduct = null;
-          tg.showAlert("Produto removido. Confira o chat para detalhes.");
-          refreshList();
-        }
-      }
-    );
-  }
-
-  function setTargetPrice() {
-    if (!selectedProduct) return;
-
-    var currentTarget = selectedProduct.target_price
-      ? " (atual: " + formatPrice(selectedProduct.target_price, selectedProduct.currency_id) + ")"
-      : "";
-
-    tg.showPopup(
-      {
-        title: "Preço alvo",
-        message: "Digite o valor mínimo para ser avisado" + currentTarget + ":",
-        buttons: [
-          { type: "cancel" },
-          { type: "ok", text: "Salvar" },
-        ],
-      },
-      function (btnId) {
-        if (btnId === "ok") {
-          // showPopup doesn't have an input field, so we need a different approach
-          // Use a simple prompt
-          var value = prompt(
-            "Digite o valor alvo para \"" + selectedProduct.title + "\"" +
-            currentTarget +
-            "\n\nEx: 50 para R$ 50,00\nDigite 0 para remover o alvo."
-          );
-          if (value === null) return; // cancelled
-
-          var num = parseFloat(value.replace(",", "."));
-          if (isNaN(num) || num < 0) {
-            tg.showAlert("Digite um valor numérico válido.");
-            return;
-          }
-          if (num === 0) {
-            removeTarget();
-            return;
-          }
-          sendToBot({
-            action: "set_target",
-            product_id: selectedProduct.id,
-            target_price: num,
-            init_data: tg.initData,
-          });
-          tg.showAlert("Alvo alterado para " + formatPrice(num, selectedProduct.currency_id) + ". Confira o chat.");
-          refreshList();
-        }
-      }
-    );
-  }
-
-  function removeTarget() {
-    if (!selectedProduct) return;
-
-    sendToBot({
-      action: "remove_target",
-      product_id: selectedProduct.id,
-      init_data: tg.initData,
-    });
-    tg.showAlert("Alvo removido. Você será avisado sobre qualquer variação.");
-    refreshList();
-  }
-
   // ── Init ─────────────────────────────────────────────────────────
-  // Expose functions to global scope for onclick handlers
-  window.refreshList = refreshList;
-  window.removeProduct = removeProduct;
-  window.setTargetPrice = setTargetPrice;
-  window.removeTarget = removeTarget;
+  window.sendList = sendList;
+  window.askProductId = askProductId;
+  window.confirmProductId = confirmProductId;
+  window.askTargetValue = askTargetValue;
+  window.confirmTarget = confirmTarget;
+  window.goHome = goHome;
 
-  // Request product list on load
-  refreshList();
-
-  // Handle BackButton
-  tg.BackButton.onClick(function () {
-    if (selectedProduct) {
-      selectedProduct = null;
-      refreshList();
-    } else {
-      tg.close();
-    }
-  });
-  if (selectedProduct) tg.BackButton.show();
+  renderHome();
 })();
 </script>
-
 </body>
 </html>
