@@ -182,7 +182,7 @@
   var API_URL = "https://contacting-twiki-martial-leo.trycloudflare.com";
 
   var products = [], allProducts = [], selected = null, productsLoaded = false;
-  var deleteMode = false, selectedIds = {}, sortBy = "default", searchQuery = "";
+  var deleteMode = false, selectedList = [], sortBy = "default", searchQuery = "";
 
   function fmtPrice(v, c) { var s = SYM[c] || c+" "; var n = parseFloat(v); return isNaN(n) ? v : s + n.toLocaleString("pt-BR", {minimumFractionDigits: 2}); }
   function pct(a, b) { a = parseFloat(a); b = parseFloat(b); if (!a || !b) return ""; var d = ((b - a) / a) * 100; var sign = d > 0 ? "+" : ""; return sign + d.toFixed(1) + "%"; }
@@ -226,7 +226,7 @@
 
   // ── Screens ───────────────────────────────────────────────────────
   function showHome() {
-    selected = null; deleteMode = false; selectedIds = {};
+    selected = null; deleteMode = false; selectedList = [];
     tg.BackButton.hide(); tg.MainButton.hide();
 
     if (!productsLoaded) { renderLoading(); loadProducts(); return; }
@@ -268,7 +268,7 @@
   function renderEmpty() { render('<div class="header"><h1>Meus produtos</h1></div><div class="empty-state"><span class="icon">📦</span><p>Nenhum produto monitorado.<br>Envie um link no chat para começar.</p></div>'); }
 
   function enterDeleteMode() {
-    deleteMode = true; selectedIds = {};
+    deleteMode = true; selectedList = [];
     tg.BackButton.show(); tg.BackButton.onClick(function () { showHome(); });
     tg.MainButton.show(); tg.MainButton.setText("Remover"); tg.MainButton.setParams({ color: "#ef4444" });
     tg.MainButton.onClick(function () { confirmDelete(); }); tg.MainButton.disable();
@@ -279,7 +279,7 @@
 
     allProducts.forEach(function (p) {
       var m = MKT[p.marketplace] || { l: "?", c: "ml" };
-      var id = p.id;
+      var id = parseInt(p.id);
       html += '<div class="card" onclick="toggleSelect(' + id + ')" id="sel-' + id + '"><div class="row">' +
         '<div class="chk" id="chk-' + id + '"></div>' +
         '<div class="mkt-badge ' + m.c + '">' + m.l + '</div><div class="info">' +
@@ -293,37 +293,39 @@
     render(html);
   }
 
-  function toggleSelect(id) {
-    if (selectedIds[id]) { delete selectedIds[id]; } else { selectedIds[id] = true; }
-    var chk = document.getElementById("chk-" + id);
-    if (chk) { chk.className = selectedIds[id] ? "chk checked" : "chk"; chk.textContent = selectedIds[id] ? "✓" : ""; }
-    var count = Object.keys(selectedIds).length;
-    tg.MainButton.setText("Remover " + count + " produto" + (count !== 1 ? "s" : ""));
-    count > 0 ? tg.MainButton.enable() : tg.MainButton.disable();
-    // Update toggle all button text using specific ID
-    var allBtn = document.getElementById("toggle-all-btn");
-    if (allBtn) allBtn.textContent = count === allProducts.length ? "Desmarcar todos" : "Selecionar " + allProducts.length + " produto" + (allProducts.length !== 1 ? "s" : "");
-  }
-
-  function toggleAll() {
-    var allSel = Object.keys(selectedIds).length === allProducts.length;
+  function updateDeleteUI() {
+    var count = selectedList.length;
     var n = allProducts.length;
-    allProducts.forEach(function (p) {
-      var id = p.id;
-      if (allSel) { delete selectedIds[id]; } else { selectedIds[id] = true; }
-      var chk = document.getElementById("chk-" + id);
-      if (chk) { chk.className = allSel ? "chk" : "chk checked"; chk.textContent = allSel ? "" : "✓"; }
-    });
-    var count = Object.keys(selectedIds).length;
     tg.MainButton.setText("Remover " + count + " produto" + (count !== 1 ? "s" : ""));
     count > 0 ? tg.MainButton.enable() : tg.MainButton.disable();
     var allBtn = document.getElementById("toggle-all-btn");
     if (allBtn) allBtn.textContent = count === n ? "Desmarcar todos" : "Selecionar " + n + " produto" + (n !== 1 ? "s" : "");
   }
 
+  function toggleSelect(id) {
+    id = parseInt(id);
+    var idx = selectedList.indexOf(id);
+    if (idx >= 0) { selectedList.splice(idx, 1); } else { selectedList.push(id); }
+    var chk = document.getElementById("chk-" + id);
+    if (chk) { var sel = selectedList.indexOf(id) >= 0; chk.className = sel ? "chk checked" : "chk"; chk.textContent = sel ? "✓" : ""; }
+    updateDeleteUI();
+  }
+
+  function toggleAll() {
+    var allSel = selectedList.length === allProducts.length;
+    var n = allProducts.length;
+    selectedList = allSel ? [] : allProducts.map(function (p) { return parseInt(p.id); });
+    allProducts.forEach(function (p) {
+      var id = parseInt(p.id); var sel = !allSel;
+      var chk = document.getElementById("chk-" + id);
+      if (chk) { chk.className = sel ? "chk checked" : "chk"; chk.textContent = sel ? "✓" : ""; }
+    });
+    updateDeleteUI();
+  }
+
   function confirmDelete() {
-    var ids = Object.keys(selectedIds); if (!ids.length) return;
-    tgConfirm("Remover " + ids.length + " produto" + (ids.length !== 1 ? "s" : "") + "?").then(function (ok) { if (ok) doDelete(ids); });
+    if (!selectedList.length) return;
+    tgConfirm("Remover " + selectedList.length + " produto" + (selectedList.length !== 1 ? "s" : "") + "?").then(function (ok) { if (ok) doDelete(selectedList); });
   }
 
   function deleteAll() {
