@@ -302,13 +302,19 @@
     if (allBtn) allBtn.textContent = count === n ? "Desmarcar todos" : "Selecionar " + n + " produto" + (n !== 1 ? "s" : "");
   }
 
+  var _toggling = false;
+
   function toggleSelect(id) {
+    if (_toggling) return;
+    _toggling = true;
     id = parseInt(id);
     var idx = selectedList.indexOf(id);
     if (idx >= 0) { selectedList.splice(idx, 1); } else { selectedList.push(id); }
+    // Update checkbox UI
     var chk = document.getElementById("chk-" + id);
     if (chk) { var sel = selectedList.indexOf(id) >= 0; chk.className = sel ? "chk checked" : "chk"; chk.textContent = sel ? "✓" : ""; }
     updateDeleteUI();
+    setTimeout(function () { _toggling = false; }, 150);
   }
 
   function toggleAll() {
