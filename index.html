@@ -139,19 +139,16 @@
   var MKT = { mercadolibre: { l: "ML", c: "ml" }, amazon: { l: "AM", c: "am" },
               shopee: { l: "SH", c: "sh" }, aliexpress: { l: "AE", c: "ae" },
               kabum: { l: "KB", c: "kb" } };
-  var API_URL = "https://fa343204cce06536-177-17-240-113.serveousercontent.com";
+  var API_URL = "";
 
   // ── API Helpers ──────────────────────────────────────────────────
   function apiUrl(path) {
-    if (!API_URL) return null;
-    return API_URL + path + (path.indexOf("?") > -1 ? "&" : "?") + "init_data=" + encodeURIComponent(tg.initData);
+    return path + (path.indexOf("?") > -1 ? "&" : "?") + "init_data=" + encodeURIComponent(tg.initData);
   }
 
   async function apiGet(path) {
-    var url = apiUrl(path);
-    if (!url) return null;
     try {
-      var r = await fetch(url);
+      var r = await fetch(apiUrl(path));
       return await r.json();
     } catch (e) {
       return { error: "network_error" };
@@ -159,11 +156,9 @@
   }
 
   async function apiPost(path, body) {
-    var url = API_URL + path;
-    if (!url) return null;
     try {
       body.init_data = tg.initData;
-      var r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      var r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       return await r.json();
     } catch (e) {
       return { error: "network_error" };
@@ -218,16 +213,18 @@
   }
 
   async function loadProducts() {
+    var url = "/api/products?init_data=" + encodeURIComponent(tg.initData);
     try {
-      var data = await apiGet("/api/products");
+      var resp = await fetch(url);
+      var data = await resp.json();
       if (data && data.ok) {
         products = data.products || [];
       } else {
-        render('<div class="empty"><span class="e">⚠️</span>Erro ao carregar<br><span style="font-size:12px">' + esc(data ? data.error : "sem resposta") + '</span></div>');
+        render('<div class="empty"><span class="e">⚠️</span>Erro ' + (data ? data.error : "sem resposta") + '<br><span style="font-size:11px;color:var(--tg-hint)">URL: ' + url.slice(0,60) + '…</span></div>');
         return;
       }
     } catch (e) {
-      render('<div class="empty"><span class="e">📡</span>Erro de conexão<br><span style="font-size:12px">Verifique se a API está no ar</span></div>');
+      render('<div class="empty"><span class="e">📡</span>Sem conexão<br><span style="font-size:11px;color:var(--tg-hint)">' + e.message.slice(0,80) + '</span></div>');
       return;
     }
     showHome();
