@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ProductTracker — Painel</title>
+<style>
+  :root {
+    --tg-bg: #18222d;
+    --tg-bg-secondary: #1c2735;
+    --tg-text: #e4e4e4;
+    --tg-hint: #7d8b99;
+    --tg-accent: #2ea6ff;
+    --tg-accent-text: #fff;
+    --tg-danger: #e74c3c;
+    --tg-success: #27ae60;
+    --tg-card: #1e2a38;
+    --tg-border: #253242;
+    --tg-link: #5b9bd5;
+    --tg-section-header: #6a7b8d;
+    --tg-destructive: #e74c3c;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--tg-bg);
+    color: var(--tg-text);
+    padding: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .header {
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .header p {
+    color: var(--tg-hint);
+    font-size: 14px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--tg-section-header);
+    margin: 24px 0 12px 4px;
+  }
+
+  .card {
+    background: var(--tg-card);
+    border: 1px solid var(--tg-border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: background 0.15s;
+  }
+  .card:active { background: var(--tg-bg-secondary); }
+
+  .product-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .product-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .product-icon.ml { background: #fff159; color: #333; }
+  .product-icon.am { background: #ff9900; color: #fff; }
+  .product-icon.sh { background: #ee4d2d; color: #fff; }
+  .product-icon.ae { background: #e3312b; color: #fff; }
+  .product-icon.kb { background: #0759e6; color: #fff; }
+
+  .product-info { flex: 1; min-width: 0; }
+  .product-title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 2px;
+    /* single-line truncate */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .product-subtitle {
+    font-size: 12px;
+    color: var(--tg-hint);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .price { color: var(--tg-text); }
+  .price-change { font-weight: 600; }
+  .price-change.down { color: var(--tg-success); }
+  .price-change.up { color: var(--tg-danger); }
+
+  .action-btn {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border: 1px solid var(--tg-border);
+    border-radius: var(--radius);
+    background: var(--tg-card);
+    color: var(--tg-text);
+    font-size: 15px;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .action-btn:active {
+    background: var(--tg-accent);
+    color: var(--tg-accent-text);
+    border-color: var(--tg-accent);
+  }
+  .action-btn.danger:active {
+    background: var(--tg-destructive);
+    border-color: var(--tg-destructive);
+    color: #fff;
+  }
+  .action-btn .emoji { margin-right: 8px; }
+
+  .target-input-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .target-input-group input {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 16px;
+    border: 1px solid var(--tg-border);
+    border-radius: var(--radius-sm);
+    background: var(--tg-bg);
+    color: var(--tg-text);
+    font-family: inherit;
+  }
+  .target-input-group button {
+    padding: 10px 16px;
+    font-size: 15px;
+    background: var(--tg-accent);
+    color: var(--tg-accent-text);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .select-product-hint {
+    text-align: center;
+    padding: 48px 16px;
+    color: var(--tg-hint);
+    font-size: 14px;
+  }
+  .select-product-hint .emoji { font-size: 32px; display: block; margin-bottom: 12px; }
+
+  .loading { text-align: center; padding: 32px; color: var(--tg-hint); }
+
+  .price-target-badge {
+    display: inline-block;
+    background: var(--tg-accent);
+    color: var(--tg-accent-text);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 6px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--tg-border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 Meus Produtos</h1>
+  <p id="user-greeting">Carregando...</p>
+</div>
+
+<div id="product-list">
+  <div class="loading">Carregando produtos...</div>
+</div>
+
+<script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+<script>
+(function () {
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+
+  // ── Theme ────────────────────────────────────────────────────────
+  function applyTheme() {
+    const scheme = tg.colorScheme; // "light" | "dark"
+    const bg = scheme === "dark" ? "#18222d" : "#ffffff";
+    const bgSecondary = scheme === "dark" ? "#1c2735" : "#f0f2f5";
+    const text = scheme === "dark" ? "#e4e4e4" : "#222222";
+    const hint = scheme === "dark" ? "#7d8b99" : "#8e8e93";
+    const card = scheme === "dark" ? "#1e2a38" : "#ffffff";
+    const border = scheme === "dark" ? "#253242" : "#e0e0e0";
+    const accent = scheme === "dark" ? "#2ea6ff" : "#007aff";
+    const sectionHeader = scheme === "dark" ? "#6a7b8d" : "#8e8e93";
+
+    const root = document.documentElement;
+    root.style.setProperty("--tg-bg", bg);
+    root.style.setProperty("--tg-bg-secondary", bgSecondary);
+    root.style.setProperty("--tg-text", text);
+    root.style.setProperty("--tg-hint", hint);
+    root.style.setProperty("--tg-card", card);
+    root.style.setProperty("--tg-border", border);
+    root.style.setProperty("--tg-accent", accent);
+    root.style.setProperty("--tg-section-header", sectionHeader);
+
+    tg.setHeaderColor(scheme === "dark" ? "bg_color" : "bg_color");
+    tg.setBackgroundColor(bg);
+  }
+
+  applyTheme();
+  tg.onEvent("themeChanged", applyTheme);
+
+  // ── User info ────────────────────────────────────────────────────
+  const initData = tg.initDataUnsafe;
+  if (initData && initData.user) {
+    const user = initData.user;
+    const name = user.first_name || "Usuário";
+    document.getElementById("user-greeting").textContent =
+      "Olá, " + name + "! Gerencie seus produtos abaixo.";
+  }
+
+  // ── Marketplace config ───────────────────────────────────────────
+  const MKT_ICONS = {
+    mercadolibre: { emoji: "🏷️", label: "ML", cls: "ml" },
+    amazon:       { emoji: "📦", label: "AM", cls: "am" },
+    shopee:       { emoji: "🛒", label: "SH", cls: "sh" },
+    aliexpress:   { emoji: "🌍", label: "AE", cls: "ae" },
+    kabum:        { emoji: "🎮", label: "KB", cls: "kb" },
+  };
+
+  function mktConfig(marketplace) {
+    return MKT_ICONS[marketplace] || { emoji: "📦", label: marketplace.slice(0, 2).toUpperCase(), cls: "am" };
+  }
+
+  // ── Telegram MainButton ──────────────────────────────────────────
+  function hideMainBtn() {
+    tg.MainButton.hide();
+    tg.MainButton.offClick(() => {});
+  }
+
+  function showMainBtn(text, color, handler) {
+    tg.MainButton.setText(text);
+    if (color) tg.MainButton.setParams({ color: color });
+    tg.MainButton.offClick(() => {});
+    tg.MainButton.onClick(handler);
+    tg.MainButton.show();
+  }
+
+  // ── Render ──────────────────────────────────────────────────────
+  let selectedProduct = null;
+  let allProducts = [];
+
+  function formatPrice(priceText, currencyId) {
+    const symbols = { BRL: "R$", ARS: "$", MXN: "$", CLP: "$", COP: "$", PEN: "S/" };
+    const sym = symbols[currencyId] || currencyId + " ";
+    const num = parseFloat(priceText);
+    if (isNaN(num)) return priceText + "";
+    return sym + num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function renderProductList(products) {
+    allProducts = products;
+    const container = document.getElementById("product-list");
+
+    if (!products || products.length === 0) {
+      container.innerHTML =
+        '<div class="select-product-hint">' +
+        '<span class="emoji">📭</span>Nenhum produto monitorado.<br><br>' +
+        'Envie um link de produto no chat do bot para começar.</div>';
+      return;
+    }
+
+    let html = '<div class="section-title">Seus produtos (' + products.length + ")</div>";
+
+    products.forEach(function (p) {
+      const mkt = mktConfig(p.marketplace);
+      const priceFmt = formatPrice(p.last_price, p.currency_id);
+      const initialFmt = formatPrice(p.initial_price, p.currency_id);
+
+      let priceSubtitle = priceFmt;
+      if (p.last_price !== p.initial_price) {
+        const diff = parseFloat(p.last_price) - parseFloat(p.initial_price);
+        const pct = parseFloat(p.initial_price) > 0
+          ? ((diff / parseFloat(p.initial_price)) * 100).toFixed(1)
+          : "0.0";
+        const dir = diff < 0 ? "down" : "up";
+        const sign = diff < 0 ? "" : "+";
+        priceSubtitle +=
+          ' <span class="price-change ' + dir + '">(' +
+          sign + pct + "%)</span>";
+      }
+
+      html +=
+        '<div class="card product-row" data-id="' +
+        p.id +
+        '" style="cursor:pointer">' +
+        '<div class="product-icon ' + mkt.cls + '">' + mkt.label + "</div>" +
+        '<div class="product-info">' +
+        '<div class="product-title">' + escapeHtml(p.title) + "</div>" +
+        '<div class="product-subtitle">' +
+        '<span class="price">' + priceSubtitle + "</span>" +
+        "</div>" +
+        "</div>" +
+        '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0">' +
+        '<span style="font-size:13px;color:var(--tg-hint)">' + "desde " + initialFmt + "</span>" +
+        (p.target_price
+          ? '<span class="price-target-badge">🎯 ' + formatPrice(p.target_price, p.currency_id) + "</span>"
+          : "") +
+        "</div>" +
+        "</div>";
+    });
+
+    html +=
+      '<div class="section-title">Ações rápidas</div>' +
+      '<button class="action-btn" onclick="refreshList()">' +
+      '  <span class="emoji">🔄</span> Atualizar lista' +
+      "</button>";
+
+    container.innerHTML = html;
+
+    // Click on product card to select it
+    document.querySelectorAll(".card.product-row").forEach(function (card) {
+      card.addEventListener("click", function () {
+        var id = parseInt(this.dataset.id);
+        var p = allProducts.find(function (x) { return x.id === id; });
+        if (p) selectProduct(p);
+      });
+    });
+  }
+
+  function selectProduct(product) {
+    selectedProduct = product;
+    var container = document.getElementById("product-list");
+    var mkt = mktConfig(product.marketplace);
+    var priceFmt = formatPrice(product.last_price, product.currency_id);
+
+    var html =
+      '<div class="section-title">Produto selecionado</div>' +
+      '<div class="card">' +
+      '  <div class="product-row">' +
+      '    <div class="product-icon ' + mkt.cls + '">' + mkt.label + "</div>" +
+      '    <div class="product-info">' +
+      '      <div class="product-title">' + escapeHtml(product.title) + "</div>" +
+      '      <div class="product-subtitle">' + priceFmt + "</div>" +
+      "    </div>" +
+      "  </div>" +
+      "</div>" +
+      '<div class="section-title">Ações</div>' +
+      ((product.target_price)
+        ? (
+          '<button class="action-btn" onclick="setTargetPrice()">' +
+          '  <span class="emoji">✏️</span> Alterar alvo (atual: ' +
+          formatPrice(product.target_price, product.currency_id) + ")" +
+          "</button>" +
+          '<button class="action-btn danger" onclick="removeTarget()">' +
+          '  <span class="emoji">🔕</span> Remover alvo de preço' +
+          "</button>"
+        )
+        : (
+          '<button class="action-btn" onclick="setTargetPrice()">' +
+          '  <span class="emoji">🎯</span> Definir preço alvo' +
+          "</button>"
+        )) +
+      '<button class="action-btn danger" onclick="removeProduct()">' +
+      '  <span class="emoji">🗑️</span> Parar de monitorar' +
+      "</button>" +
+      '<button class="action-btn" onclick="refreshList()">' +
+      '  <span class="emoji">🔙</span> Voltar para lista' +
+      "</button>";
+
+    container.innerHTML = html;
+    hideMainBtn();
+  }
+
+  function escapeHtml(text) {
+    if (!text) return "";
+    var d = document.createElement("div");
+    d.textContent = text;
+    return d.innerHTML;
+  }
+
+  // ── Actions ──────────────────────────────────────────────────────
+  function sendToBot(payload) {
+    try {
+      tg.sendData(JSON.stringify(payload));
+    } catch (e) {
+      tg.showAlert("Erro ao comunicar com o bot. Tente novamente.");
+    }
+  }
+
+  function refreshList() {
+    selectedProduct = null;
+    hideMainBtn();
+    document.getElementById("product-list").innerHTML =
+      '<div class="loading">Carregando produtos...</div>';
+    sendToBot({
+      action: "list",
+      init_data: tg.initData,
+    });
+  }
+
+  function removeProduct() {
+    if (!selectedProduct) return;
+
+    tg.showConfirm(
+      "Tem certeza que deseja parar de monitorar \"" + selectedProduct.title + "\"?",
+      function (ok) {
+        if (ok) {
+          sendToBot({
+            action: "remove",
+            product_id: selectedProduct.id,
+            init_data: tg.initData,
+          });
+          selectedProduct = null;
+          tg.showAlert("Produto removido. Confira o chat para detalhes.");
+          refreshList();
+        }
+      }
+    );
+  }
+
+  function setTargetPrice() {
+    if (!selectedProduct) return;
+
+    var currentTarget = selectedProduct.target_price
+      ? " (atual: " + formatPrice(selectedProduct.target_price, selectedProduct.currency_id) + ")"
+      : "";
+
+    tg.showPopup(
+      {
+        title: "Preço alvo",
+        message: "Digite o valor mínimo para ser avisado" + currentTarget + ":",
+        buttons: [
+          { type: "cancel" },
+          { type: "ok", text: "Salvar" },
+        ],
+      },
+      function (btnId) {
+        if (btnId === "ok") {
+          // showPopup doesn't have an input field, so we need a different approach
+          // Use a simple prompt
+          var value = prompt(
+            "Digite o valor alvo para \"" + selectedProduct.title + "\"" +
+            currentTarget +
+            "\n\nEx: 50 para R$ 50,00\nDigite 0 para remover o alvo."
+          );
+          if (value === null) return; // cancelled
+
+          var num = parseFloat(value.replace(",", "."));
+          if (isNaN(num) || num < 0) {
+            tg.showAlert("Digite um valor numérico válido.");
+            return;
+          }
+          if (num === 0) {
+            removeTarget();
+            return;
+          }
+          sendToBot({
+            action: "set_target",
+            product_id: selectedProduct.id,
+            target_price: num,
+            init_data: tg.initData,
+          });
+          tg.showAlert("Alvo alterado para " + formatPrice(num, selectedProduct.currency_id) + ". Confira o chat.");
+          refreshList();
+        }
+      }
+    );
+  }
+
+  function removeTarget() {
+    if (!selectedProduct) return;
+
+    sendToBot({
+      action: "remove_target",
+      product_id: selectedProduct.id,
+      init_data: tg.initData,
+    });
+    tg.showAlert("Alvo removido. Você será avisado sobre qualquer variação.");
+    refreshList();
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────
+  // Expose functions to global scope for onclick handlers
+  window.refreshList = refreshList;
+  window.removeProduct = removeProduct;
+  window.setTargetPrice = setTargetPrice;
+  window.removeTarget = removeTarget;
+
+  // Request product list on load
+  refreshList();
+
+  // Handle BackButton
+  tg.BackButton.onClick(function () {
+    if (selectedProduct) {
+      selectedProduct = null;
+      refreshList();
+    } else {
+      tg.close();
+    }
+  });
+  if (selectedProduct) tg.BackButton.show();
+})();
+</script>
+
+</body>
+</html>
