@@ -284,7 +284,8 @@
         '<div class="p-meta">' + fmtPrice(p.last_price, p.currency_id) + '</div></div></div></div>';
     });
 
-    html += '<div class="btn full red" onclick="deleteAll()" style="margin-top:14px">Remover todos os produtos</div>';
+    html += '<div class="btn full red" onclick="deleteAll()" style="margin-top:14px">Remover todos os produtos</div>' +
+      '<div class="btn full" onclick="showHome()" style="margin-top:8px">Cancelar</div>';
     render(html);
   }
 
