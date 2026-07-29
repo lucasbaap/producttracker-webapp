@@ -189,7 +189,7 @@
               shopee: { l: "SH", c: "sh", full: "Shopee", prep: "na" },
               aliexpress: { l: "AE", c: "ae", full: "AliExpress", prep: "no" },
               kabum: { l: "KB", c: "kb", full: "KaBuM!", prep: "na" } };
-  var API_URL = "https://slideshow-suites-contamination-paradise.trycloudflare.com";
+  var API_URL = "";
 
   var products = [], allProducts = [], selected = null, productsLoaded = false;
   var deleteMode = false, selectedList = [], sortBy = "default", searchQuery = "";
@@ -392,12 +392,18 @@
   function showDetail(id) {
     var p = allProducts.find(function (x) { return x.id === id; }); if (!p) return;
     selected = p; tg.BackButton.show(); tg.BackButton.onClick(function () { showHome(); }); tg.MainButton.hide();
+    window.scrollTo(0, 0);
 
     var m = MKT[p.marketplace] || { l: "?", c: "ml" };
     var t = trend(p); var ch = pct(p.initial_price, p.last_price);
     var linkUrl = p.affiliate_url || p.url || "";
 
-    var html = '<div class="detail"><div class="back-btn" onclick="showHome()">← Voltar</div>' +
+    var html = '<div class="detail">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">' +
+      '<div class="back-btn" onclick="showHome()">← Voltar</div>' +
+      '<div class="icon-btn" onclick="shareProduct()" title="Copiar link" style="width:34px;height:34px">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>' +
+      '</div>' +
       '<div class="card disabled"><div class="row"><div class="mkt-badge ' + m.c + '">' + m.l + '</div>' +
       '<div class="info"><div class="p-title">' + esc(p.title || "") + '</div><div class="p-meta">' + m.full + '</div></div></div></div>' +
 
@@ -414,9 +420,12 @@
       (p.target_price
         ? '<div class="btn" onclick="editTarget()">Alterar meta (' + fmtPrice(p.target_price, p.currency_id) + ')</div><div class="btn red" onclick="removeTarget()">Remover meta</div>'
         : '<div class="btn" onclick="editTarget()">Definir meta de preço</div>') +
-      '<div class="btn red" onclick="doRemove()">Parar de monitorar</div></div></div>';
+      '<div class="btn red" onclick="doRemove()">Parar de monitorar</div></div>' +
+
+      '<div id="chart-container" style="margin-top:16px;min-height:120px"></div></div>';
 
     render(html);
+    loadChart(id);
   }
 
   function editTarget() {
@@ -454,6 +463,88 @@
     else { showToast("Erro: " + (res ? res.error : "sem resposta")); }
   }
 
+  // ── Share product (clipboard) ────────────────────────────────────
+  function shareProduct() {
+    if (!selected) return;
+    var link = selected.affiliate_url || selected.url || "";
+    if (!link) { showToast("Sem link disponível"); return; }
+    var text = "📦 " + (selected.title || "") + "\n💰 " + fmtPrice(selected.last_price, selected.currency_id) + "\n🔗 " + link;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { showToast("Link copiado!"); });
+    } else {
+      // Fallback for older WebViews
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); showToast("Link copiado!"); } catch (e) { showToast("Erro ao copiar"); }
+      document.body.removeChild(ta);
+    }
+  }
+
+  // ── Price history chart (SVG, no external deps) ──────────────────
+  async function loadChart(productId) {
+    var url = API_URL + "/api/products/" + productId + "/history?init_data=" + encodeURIComponent(tg.initData);
+    try {
+      var r = await fetch(url); var d = await r.json();
+      if (!d || !d.ok || !d.history || d.history.length < 2) { return; }
+      renderChart(d.history, selected ? selected.target_price : null, selected ? selected.currency_id : "BRL");
+    } catch (e) { /* silent fail — chart is optional */ }
+  }
+
+  function renderChart(history, targetPrice, currency) {
+    var container = document.getElementById("chart-container");
+    if (!container) return;
+    var points = history.map(function (h) { return { p: parseFloat(h.price), t: new Date(h.recorded_at) }; });
+
+    var minP = Math.min.apply(null, points.map(function (pt) { return pt.p; }));
+    var maxP = Math.max.apply(null, points.map(function (pt) { return pt.p; }));
+    var pad = (maxP - minP) * 0.15 || maxP * 0.05 || 5;
+    var yMin = Math.max(0, minP - pad);
+    var yMax = maxP + pad;
+
+    var w = Math.max(280, container.clientWidth - 32);
+    var h = 130;
+    var chartW = w - 50;
+    var chartH = h - 30;
+
+    function x(i) { return 45 + (i / (points.length - 1)) * chartW; }
+    function y(v) { return 10 + chartH - ((v - yMin) / (yMax - yMin)) * chartH; }
+
+    var line = points.map(function (pt, i) { return (i === 0 ? "M" : "L") + x(i).toFixed(1) + "," + y(pt.p).toFixed(1); }).join(" ");
+
+    var targetY = null;
+    if (targetPrice && targetPrice > yMin && targetPrice < yMax) {
+      targetY = y(targetPrice);
+    }
+
+    var sym = SYM[currency] || currency + " ";
+
+    var svg =
+      '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width:100%;height:auto;display:block">' +
+      '<defs><linearGradient id="grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--accent)" stop-opacity="0.15"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>' +
+      // Y axis labels
+      '<text x="42" y="' + (y(yMin) + 4) + '" fill="var(--muted)" font-size="9" text-anchor="end">' + sym + yMin.toFixed(0) + '</text>' +
+      '<text x="42" y="' + (y(yMax) + 4) + '" fill="var(--muted)" font-size="9" text-anchor="end">' + sym + yMax.toFixed(0) + '</text>' +
+      // Area under line
+      '<path d="' + line + 'L' + x(points.length - 1) + ',' + y(yMin) + 'L' + x(0) + ',' + y(yMin) + 'Z" fill="url(#grad)"/>' +
+      // Line
+      '<path d="' + line + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      // Last price dot
+      '<circle cx="' + x(points.length - 1).toFixed(1) + '" cy="' + y(points[points.length - 1].p).toFixed(1) + '" r="3" fill="var(--accent)"/>' +
+      // Target line
+      (targetY !== null ? '<line x1="45" y1="' + targetY.toFixed(1) + '" x2="' + (w - 5) + '" y2="' + targetY.toFixed(1) + '" stroke="var(--red)" stroke-width="1" stroke-dasharray="4,3" opacity="0.7"/>' : '') +
+      // Last date label
+      '<text x="' + x(points.length - 1) + '" y="' + (h - 4) + '" fill="var(--muted)" font-size="9" text-anchor="middle">' + fmtDate(points[points.length - 1].t) + '</text>' +
+      (targetY !== null ? '<text x="' + (w - 5) + '" y="' + (targetY + 10) + '" fill="var(--red)" font-size="9" text-anchor="end">🎯</text>' : '') +
+      '</svg>';
+
+    container.innerHTML = '<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px"><div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">HISTÓRICO DE PREÇOS</div>' + svg + '</div>';
+  }
+
+  function fmtDate(date) {
+    return String(date.getDate()).padStart(2, "0") + "/" + String(date.getMonth() + 1).padStart(2, "0");
+  }
+
   // ── API ───────────────────────────────────────────────────────────
   async function loadProducts() {
     var url = API_URL + "/api/products?_cb=" + Date.now() + "&init_data=" + encodeURIComponent(tg.initData);
@@ -478,6 +569,7 @@
   window.enterDeleteMode = enterDeleteMode; window.toggleSelect = toggleSelect;
   window.toggleAll = toggleAll; window.confirmDelete = confirmDelete; window.deleteAll = deleteAll;
   window.toggleSortMenu = toggleSortMenu; window.setSort = setSort;
+  window.shareProduct = shareProduct;
 
   renderLoading(); loadProducts();
 })();
