@@ -501,47 +501,61 @@
 
     var minP = Math.min.apply(null, points.map(function (pt) { return pt.p; }));
     var maxP = Math.max.apply(null, points.map(function (pt) { return pt.p; }));
-    var pad = (maxP - minP) * 0.15 || maxP * 0.05 || 5;
-    var yMin = Math.max(0, minP - pad);
-    var yMax = maxP + pad;
+    // Ajuste 4: arredondar para centena
+    var yMin = Math.floor(minP / 100) * 100;
+    var yMax = Math.ceil((maxP + 1) / 100) * 100;
+    if (yMin === yMax) { yMax = yMin + 100; }
 
     var w = Math.max(280, container.clientWidth - 32);
     var h = 130;
-    var chartW = w - 50;
+    var padLeft = 50;
+    var padRight = 20;
+    var chartW = w - padLeft - padRight;
     var chartH = h - 30;
 
-    function x(i) { return 45 + (i / (points.length - 1)) * chartW; }
+    function x(i) { return padLeft + (i / (points.length - 1)) * chartW; }
     function y(v) { return 10 + chartH - ((v - yMin) / (yMax - yMin)) * chartH; }
 
     var line = points.map(function (pt, i) { return (i === 0 ? "M" : "L") + x(i).toFixed(1) + "," + y(pt.p).toFixed(1); }).join(" ");
 
     var targetY = null;
-    if (targetPrice && targetPrice > yMin && targetPrice < yMax) {
+    if (targetPrice && targetPrice >= yMin && targetPrice <= yMax) {
       targetY = y(targetPrice);
     }
 
     var sym = SYM[currency] || currency + " ";
 
+    // Ajuste 1: mais padding direito para a data nao cortar
+    // Ajuste 2: sem emoji na linha da meta
+
     var svg =
       '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width:100%;height:auto;display:block">' +
       '<defs><linearGradient id="grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--accent)" stop-opacity="0.15"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>' +
-      // Y axis labels
-      '<text x="42" y="' + (y(yMin) + 4) + '" fill="var(--muted)" font-size="9" text-anchor="end">' + sym + yMin.toFixed(0) + '</text>' +
-      '<text x="42" y="' + (y(yMax) + 4) + '" fill="var(--muted)" font-size="9" text-anchor="end">' + sym + yMax.toFixed(0) + '</text>' +
+      // Y axis labels (ajuste 4)
+      '<text x="' + (padLeft - 8) + '" y="' + (y(yMin) + 4) + '" fill="var(--muted)" font-size="9" text-anchor="end">' + sym + yMin.toFixed(0) + '</text>' +
+      '<text x="' + (padLeft - 8) + '" y="' + (y(yMax) + 4) + '" fill="var(--muted)" font-size="9" text-anchor="end">' + sym + yMax.toFixed(0) + '</text>' +
       // Area under line
       '<path d="' + line + 'L' + x(points.length - 1) + ',' + y(yMin) + 'L' + x(0) + ',' + y(yMin) + 'Z" fill="url(#grad)"/>' +
       // Line
       '<path d="' + line + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-      // Last price dot
-      '<circle cx="' + x(points.length - 1).toFixed(1) + '" cy="' + y(points[points.length - 1].p).toFixed(1) + '" r="3" fill="var(--accent)"/>' +
-      // Target line
-      (targetY !== null ? '<line x1="45" y1="' + targetY.toFixed(1) + '" x2="' + (w - 5) + '" y2="' + targetY.toFixed(1) + '" stroke="var(--red)" stroke-width="1" stroke-dasharray="4,3" opacity="0.7"/>' : '') +
-      // Last date label
-      '<text x="' + x(points.length - 1) + '" y="' + (h - 4) + '" fill="var(--muted)" font-size="9" text-anchor="middle">' + fmtDate(points[points.length - 1].t) + '</text>' +
-      (targetY !== null ? '<text x="' + (w - 5) + '" y="' + (targetY + 10) + '" fill="var(--red)" font-size="9" text-anchor="end">🎯</text>' : '') +
+      // Dots for each point (ajuste 3: preparado para tooltip)
+      points.map(function (pt, i) { return '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(pt.p).toFixed(1) + '" r="2.5" fill="var(--accent)" stroke="var(--bg)" stroke-width="1"/>'; }).join("") +
+      // Last price dot bigger
+      '<circle cx="' + x(points.length - 1).toFixed(1) + '" cy="' + y(points[points.length - 1].p).toFixed(1) + '" r="3.5" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/>' +
+      // Target line (ajuste 2: sem emoji)
+      (targetY !== null ? '<line x1="' + padLeft + '" y1="' + targetY.toFixed(1) + '" x2="' + (w - padRight) + '" y2="' + targetY.toFixed(1) + '" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.7"/>' : '') +
+      // Date labels for first and last
+      '<text x="' + x(0) + '" y="' + (h - 6) + '" fill="var(--muted)" font-size="9" text-anchor="middle">' + fmtDate(points[0].t) + '</text>' +
+      '<text x="' + x(points.length - 1) + '" y="' + (h - 6) + '" fill="var(--muted)" font-size="9" text-anchor="middle">' + fmtDate(points[points.length - 1].t) + '</text>' +
       '</svg>';
 
-    container.innerHTML = '<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px"><div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">HISTÓRICO DE PREÇOS</div>' + svg + '</div>';
+    // Ajuste 5: subtitulo se produto indisponivel
+    var subtitle = "";
+    if (selected && selected.last_scrape_status === "unavailable" && selected.last_checked) {
+      try { var d = new Date(selected.last_checked); subtitle = '<div style="font-size:11px;color:var(--red);margin-top:6px">Indisponível desde ' + String(d.getDate()).padStart(2,"0") + "/" + String(d.getMonth()+1).padStart(2,"0") + "/" + String(d.getFullYear()).slice(-2) + '</div>'; } catch(e) {}
+    }
+
+    container.innerHTML = '<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px"><div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">HISTÓRICO DE PREÇOS</div>' + svg + subtitle + '</div>';
   }
 
   function fmtDate(date) {
