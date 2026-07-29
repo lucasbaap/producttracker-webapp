@@ -468,17 +468,16 @@
     if (!selected) return;
     var link = selected.affiliate_url || selected.url || "";
     if (!link) { showToast("Sem link disponível"); return; }
-    var text = "📦 " + (selected.title || "") + "\n💰 " + fmtPrice(selected.last_price, selected.currency_id) + "\n🔗 " + link;
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function () { showToast("Link copiado!"); });
+      navigator.clipboard.writeText(link).then(function () { showToast("Link copiado!"); });
     } else {
-      // Fallback for older WebViews
       var ta = document.createElement("textarea");
-      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      ta.value = link; ta.style.position = "fixed"; ta.style.opacity = "0";
       document.body.appendChild(ta); ta.select();
       try { document.execCommand("copy"); showToast("Link copiado!"); } catch (e) { showToast("Erro ao copiar"); }
       document.body.removeChild(ta);
     }
+  }
   }
 
   // ── Price history chart (SVG, no external deps) ──────────────────
