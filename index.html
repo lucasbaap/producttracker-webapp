@@ -551,8 +551,8 @@
 
     // Ajuste 5: subtitulo se produto indisponivel
     var subtitle = "";
-    if (selected && selected.last_scrape_status === "unavailable" && selected.last_checked) {
-      try { var d = new Date(selected.last_checked); subtitle = '<div style="font-size:11px;color:var(--red);margin-top:6px">Indisponível desde ' + String(d.getDate()).padStart(2,"0") + "/" + String(d.getMonth()+1).padStart(2,"0") + "/" + String(d.getFullYear()).slice(-2) + '</div>'; } catch(e) {}
+    if (selected && selected.last_scrape_status === "unavailable") {
+      subtitle = '<div style="font-size:11px;color:var(--red);margin-top:6px">Produto atualmente indisponível</div>';
     }
 
     container.innerHTML = '<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px"><div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">HISTÓRICO DE PREÇOS</div>' + svg + subtitle + '</div>';
