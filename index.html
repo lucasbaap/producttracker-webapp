@@ -161,6 +161,7 @@
 </head>
 <body>
 <div id="app"></div>
+<script>document.getElementById("app").innerHTML = '<div class="loading">Carregando...</div>';</script>
 
 <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
 <script>
@@ -397,6 +398,10 @@
     var m = MKT[p.marketplace] || { l: "?", c: "ml" };
     var t = trend(p); var ch = pct(p.initial_price, p.last_price);
     var linkUrl = p.affiliate_url || p.url || "";
+    var addedDate = "";
+    if (p.added_at) {
+      try { var d = new Date(p.added_at); addedDate = " (" + String(d.getDate()).padStart(2,"0") + "/" + String(d.getMonth()+1).padStart(2,"0") + "/" + String(d.getFullYear()).slice(-2) + ")"; } catch(e) {}
+    }
 
     var html = '<div class="detail">' +
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">' +
@@ -410,7 +415,7 @@
       (linkUrl ? '<a href="' + linkUrl + '" target="_blank" style="display:block;margin-bottom:12px;padding:13px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);color:var(--accent);text-decoration:none;font-size:14px;font-weight:600;text-align:center">Ver ' + (m.prep||"no") + ' ' + m.full + '</a>' : '') +
 
       '<div class="detail-table">' +
-      '<div class="dt-row"><span class="dt-label">Preço no cadastro</span><span class="dt-value">' + fmtPrice(p.initial_price, p.currency_id) + '</span></div>' +
+      '<div class="dt-row"><span class="dt-label">Preço no cadastro' + addedDate + '</span><span class="dt-value">' + fmtPrice(p.initial_price, p.currency_id) + '</span></div>' +
       '<div class="dt-row"><span class="dt-label">Preço atual</span><span class="dt-value ' + t + '">' + fmtPrice(p.last_price, p.currency_id) + '</span></div>' +
       '<div class="dt-row"><span class="dt-label">Variação</span><span class="dt-value ' + t + '">' + ch + '</span></div>' +
       (p.target_price ? '<div class="dt-row"><span class="dt-label">Meta</span><span class="dt-value" style="color:var(--accent)">' + fmtPrice(p.target_price, p.currency_id) + '</span></div>' : '') +
@@ -477,7 +482,6 @@
       try { document.execCommand("copy"); showToast("Link copiado!"); } catch (e) { showToast("Erro ao copiar"); }
       document.body.removeChild(ta);
     }
-  }
   }
 
   // ── Price history chart (SVG, no external deps) ──────────────────
